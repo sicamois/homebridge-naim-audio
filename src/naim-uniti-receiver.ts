@@ -23,7 +23,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
   private readonly atomSpeakerService: Service;
   private readonly informationService: Service;
 
-  private powerOn:  boolean;
+  private powerOn: boolean;
   private mute: boolean;
   private volume: number;
   private currentMediaState: number;
@@ -261,7 +261,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
 
-    log.info("Naim Uniti Receiver '%s' created!", name);
+    log.info('Naim Uniti Receiver %s created!', name);
   }
 
   /*

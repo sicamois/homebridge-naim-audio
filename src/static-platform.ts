@@ -43,10 +43,16 @@ export = (api: API) => {
 class NaimUnityPlatform implements StaticPlatformPlugin {
   private readonly log: Logging;
   private readonly config: PlatformConfig;
+  private readonly accessoriesToAdd: AccessoryPlugin[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
     this.config = config;
+    this.accessoriesToAdd = [];
+    // eslint-disable-next-line @typescript-eslint/member-delimiter-style
+    this.config.receivers.forEach((receiver: { name: string; ip_address: string; }) => {
+      this.accessoriesToAdd.push(new NaimUnitiReceiver(hap, this.log, receiver.name, receiver.ip_address));
+    });
 
     // probably parse config or something here
 
@@ -55,13 +61,13 @@ class NaimUnityPlatform implements StaticPlatformPlugin {
 
   /*
    * This method is called to retrieve all accessories exposed by the platform.
-   * The Platform can delay the response my invoking the callback at a later time,
+   * The Platform can delay the response my invoking the callback at a later time
    * it will delay the bridge startup though, so keep it to a minimum.
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
+
+
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback([
-      new NaimUnitiReceiver(hap, this.log, this.config.name!, this.config.ip_address)
-    ]);
+    callback(this.accessoriesToAdd);
   }
 }
