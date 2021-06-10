@@ -1,0 +1,27 @@
+{
+  "pluginAlias": "NaimUnitiAtom",
+  "pluginType": "accessory",
+  "singular": false,
+  "headerDisplay": "",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "placeholder": "Amplifier",
+        "required": true,
+        "description": "Amplifier name that Siri will recognize."
+      },
+      "ip_address": {
+          "type": "string",
+          "title": "IP Address of the amplifier",
+          "placeholder": "192.168.0.20",
+          "required": true,
+          "description": "IP address of receiver. NOTE: Reserved address strongly recommended.",
+          "format": "ipv4"
+      }
+    }
+  },
+  "footerDisplay": "Please raise any issues on the [project page](https://github.com/sicamois/homebridge-naim-uniti-atom/issues)."
+}
