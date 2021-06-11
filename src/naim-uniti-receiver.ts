@@ -220,7 +220,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
         const response = await axios.get(apiURL);
         return response.data[key] as string;
       } catch (error) {
-        handleError(error);
+        handleError(error, apiURL);
       }
     };
 
@@ -234,31 +234,31 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
       if (!forceGet) {
         axios.put(apiURL)
           .catch(error => {
-            handleError(error);
+            handleError(error, apiURL);
           });
       } else {
         axios.get(apiURL)
           .catch(error => {
-            handleError(error);
+            handleError(error, apiURL);
           });
       }
     };
 
-    function handleError(error: Error) {
+    function handleError(error: Error, url = 'N/A') {
       if (axios.isAxiosError(error)) {
         if (error.response) {
           // client received an error response (5xx, 4xx)
-          log.error('Naim receiver emited a bad response (Details : %s)', error.message);
+          log.error('Naim receiver emited a bad response (On : %s - Details : %s)', url, error.message);
         } else if (error.request) {
           // client never received a response, or request never left
-          log.error('Naim receiver did not respond. Check the IP Address in your configuration of the plugin. - Details : %s', error.message);
+          log.error('Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)', url, error.message);
         } else {
           // Not a network error
-          log.error('Other request error (Details : %s)', error.message);
+          log.error('Other request error (On : %s - Details : %s)', url, error.message);
         }
       } else {
         // Not an error from the request
-        log.error(error.message);
+        log.error('Problem (On : %s - Details : %s)', url, error.message);
       }
     }
 
