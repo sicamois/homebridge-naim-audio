@@ -276,7 +276,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
     //     }
     //   });
 
-    getSerialNumber;
+    getSerialNumber();
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom')
