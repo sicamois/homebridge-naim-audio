@@ -2,44 +2,40 @@
   "pluginAlias": "NaimUnitiPlatform",
   "pluginType": "platform",
   "singular": true,
+  "headerDisplay": "",
   "footerDisplay": "Please raise any issues on the [project page](https://github.com/sicamois/homebridge-naim-uniti-receiver/issues).",
-  "headerDisplay": "Naim Uniti Atom as a HomeKit TV",
   "schema": {
     "type": "object",
-    "required": [
-      "receivers"
-    ],
+    "required": ["receivers"],
     "properties": {
       "receivers": {
-          "type": "array",
-          "title": "Receivers",
-          "descrpition": "List of receivers and/or receiver Zones to add to HomeKit.",
-          "items": {
-              "type": "object",
-              "title": "Receiver or Receiver Zone",
-              "description": "Receiver or receiver Zone to add to HomeKit.",
-              "required": [
-                  "name",
-                  "ip_address"
-              ],
-              "properties": {
-                "name": {
-                  "title": "Name",
-                  "type": "string",
-                  "placeholder": "Amplifier",
-                  "required": true,
-                  "description": "Amplifier name that Siri will recognize."
-                },
-                "ip_address": {
-                    "type": "string",
-                    "title": "IP Address of the amplifier",
-                    "placeholder": "192.168.0.20",
-                    "required": true,
-                    "description": "IP address of receiver. NOTE: Reserved address strongly recommended.",
-                    "format": "ipv4"
-                }
-              }
+        "type": "array",
+        "title": "Receivers",
+        "descrpition": "List of receivers and/or receiver Zones to add to HomeKit.",
+        "items": {
+          "type": "object",
+          "title": "Receiver or Receiver Zone",
+          "description": "Receiver or receiver Zone to add to HomeKit.",
+          "required": ["name", "ip_address"],
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "placeholder": "Amplifier",
+              "required": true,
+              "description": "Amplifier name that Siri will recognize."
+            },
+            "ip_address": {
+              "type": "string",
+              "title": "IP Address of the amplifier",
+              "placeholder": "192.168.0.20",
+              "required": true,
+              "description": "IP address of receiver. NOTE: Reserved address strongly recommended.",
+              "format": "ipv4"
+            },
+            "additionalProperties": false
           }
+        }
       }
     },
     "additionalProperties": false
