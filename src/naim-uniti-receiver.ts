@@ -32,7 +32,6 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
   private currentMediaState: number;
 
   constructor(hap: HAP, log: Logging, name: string, ip: string) {
-    log.debug('Creating atom');
     this.log = log;
     this.name = name;
     this.powerOn = false;
