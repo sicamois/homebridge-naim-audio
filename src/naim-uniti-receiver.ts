@@ -262,7 +262,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
       }
     }
 
-    naimApiGet('system', 'hardwareSerial')
+    naimApiGet('/system', 'hardwareSerial')
       .then(returnedValue => {
         if (returnedValue) {
           this.informationService.updateCharacteristic(hap.Characteristic.SerialNumber, returnedValue);
