@@ -29,10 +29,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sicamois/homebridge-naim-uniti-atom"
+    "url": "https://github.com/sicamois/homebridge-naim-uniti-receiver"
   },
   "bugs": {
-    "url": "https://github.com/sicamois/homebridge-naim-uniti-atom/issues"
+    "url": "https://github.com/sicamois/homebridge-naim-uniti-receiver/issues"
   },
   "devDependencies": {
     "@types/node": "15.12.2",
