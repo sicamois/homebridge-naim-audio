@@ -262,9 +262,12 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
       }
     }
 
+    const serialNumber = await naimApiGet('system', 'hardwareSerial');
+
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
-      .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
+      .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom')
+      .setCharacteristic(hap.Characteristic.SerialNumber, serialNumber!);
 
     log.info('Naim Uniti Receiver %s created!', name);
   }
