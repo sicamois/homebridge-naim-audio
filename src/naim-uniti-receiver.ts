@@ -1,5 +1,6 @@
 import {
   AccessoryPlugin,
+  Categories,
   CharacteristicGetCallback,
   CharacteristicSetCallback,
   CharacteristicValue,
@@ -11,11 +12,13 @@ import {
 } from 'homebridge';
 
 import axios from 'axios';
+import { HomebridgeAPI } from 'homebridge/lib/api';
 
 const NAIM_API_PORT = 15081;
 
 export class NaimUnitiReceiver implements AccessoryPlugin {
   public name: string;
+  public category: Categories;
 
   private readonly log: Logging;
 
@@ -36,6 +39,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
     this.mute = false;
     this.volume = 0;
     this.currentMediaState = hap.Characteristic.CurrentMediaState.STOP;
+    this.category = hap.Categories.TELEVISION;
 
     const baseURL = 'http://' + ip + ':' + NAIM_API_PORT;
 
