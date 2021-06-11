@@ -264,9 +264,12 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
 
     let serialNumber = '0000000';
     const getSerialNumber = async () => {
+      log.debug('get serial number');
       const returnedValue = await naimApiGet('/system', 'hardwareSerial');
+      log.debug('received a serial number: %s', returnedValue);
       if (returnedValue) {
         serialNumber = returnedValue;
+        log.debug('set the serial number: %s', serialNumber);
       }
     };
     // naimApiGet('/system', 'hardwareSerial')
