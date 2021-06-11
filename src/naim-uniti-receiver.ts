@@ -39,7 +39,7 @@ export class NaimUnitiReceiver implements AccessoryPlugin {
     this.mute = false;
     this.volume = 0;
     this.currentMediaState = hap.Characteristic.CurrentMediaState.STOP;
-    this.category = hap.Categories.TELEVISION;
+    this.category = hap.Categories.AUDIO_RECEIVER;
 
     const baseURL = 'http://' + ip + ':' + NAIM_API_PORT;
 
