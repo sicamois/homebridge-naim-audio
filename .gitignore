@@ -3,6 +3,7 @@ dist
 
 # Ignore package-lock.json
 package-lock.json
+build-link.sh
 
 # Ignore Mac OS DS_Store
 .DS_Store
