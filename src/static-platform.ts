@@ -50,8 +50,8 @@ class NaimUnityPlatform implements StaticPlatformPlugin {
     this.config = config;
     this.accessoriesToAdd = [];
     // eslint-disable-next-line @typescript-eslint/member-delimiter-style
-    log.debug('receivers: %s', this.config.receivers);
-    this.config.receivers.forEach((receiver: { name: string; ip_address: string; }) => {
+    log.debug('receivers: %s', this.config.Receivers);
+    this.config.Receivers.forEach((receiver: { name: string; ip_address: string; }) => {
       this.accessoriesToAdd.push(new NaimUnitiReceiver(hap, this.log, receiver.name, receiver.ip_address));
       log.debug('Receiver: %s', receiver);
     });
