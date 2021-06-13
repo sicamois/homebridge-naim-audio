@@ -100,10 +100,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.log('Configuring Uniti accessory %s', accessory.displayName);
 
     // Remove existing services
-    accessory.services.map(service => accessory.removeService(service));
+    //accessory.services.map(service => accessory.removeService(service));
 
     //Resetup services
-    this.setServices(accessory);
+    //this.setServices(accessory);
 
     // Push already registered accessory
     this.accessories.push(accessory);
