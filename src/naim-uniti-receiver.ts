@@ -99,16 +99,41 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory<context>): void {
     this.log('Configuring Uniti accessory %s', accessory.displayName);
 
-    // Remove existing services
-    //accessory.services.map(service => accessory.removeService(service));
-
-    //Resetup services
-    //this.setServices(accessory);
-
     // Push already registered accessory
     this.accessories.push(accessory);
 
+    const receivers: { name: string; ip_address:string }[] = this.config.receivers;
+    const needsRemoving = !receivers.some(receiver => receiver.name === accessory.displayName || receiver.ip_address === accessory.context.ip);
+    if (needsRemoving) {
+      this.removeAudioReceiverAccessory(accessory);
+    }
   }
+
+  addAudioReceiverAccessory = (name: string, ip: string) => {
+    this.log.info('Adding new accessory with name %s', name);
+
+    // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
+    const uuid = hap.uuid.generate(name);
+    const accessory = new Accessory<context>(
+      name,
+      uuid,
+      hap.Categories.AUDIO_RECEIVER,
+    );
+
+    accessory.context = { ip };
+
+    this.setServices(accessory);
+
+    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    this.accessories.push(accessory);
+  };
+
+  removeAudioReceiverAccessory = (accessory: PlatformAccessory<context>) => {
+    this.log.info('Removing accessory with name %s', accessory.displayName);
+
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    this.accessories.splice(0, 1, accessory);
+  };
 
   setServices = (accessory: PlatformAccessory<context>) => {
     if (!accessory.context || !accessory.context.ip) {
@@ -362,28 +387,4 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     };
   };
 
-  addAudioReceiverAccessory = (name: string, ip: string) => {
-    this.log.info('Adding new accessory with name %s', name);
-
-    // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
-    const uuid = hap.uuid.generate(name);
-    const accessory = new Accessory<context>(
-      name,
-      uuid,
-      hap.Categories.AUDIO_RECEIVER,
-    );
-
-    accessory.context = { ip };
-
-    this.setServices(accessory);
-
-    try {
-      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
-        accessory,
-      ]);
-    } catch (error) {
-      this.log.warn('Accessory alredy registered. Skipping');
-    }
-    
-  };
 }
