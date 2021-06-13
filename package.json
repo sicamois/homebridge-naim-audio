@@ -3,7 +3,7 @@
   "displayName": "Homebridge Naim Uniti Atom Receiver",
   "version": "0.3",
   "description": "Control your Naim Uniti Atom directly in the Apple Home App",
-  "main": "dist/static-platform.js",
+  "main": "dist/naim-uniti-receiver.js",
   "scripts": {
     "clean": "rimraf ./dist",
     "postpublish": "npm run clean",
