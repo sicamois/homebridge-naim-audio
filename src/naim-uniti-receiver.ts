@@ -82,7 +82,15 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       
       const receivers = this.config.receivers;
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // Remove all receivers that are not in the config file anymore
+      this.accessories.forEach(accessory => {
+        const needsRemoving = !receivers.some((receiver: { name:string; ip_address: string }) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
+        if (needsRemoving) {
+          this.removeAudioReceiverAccessory(accessory);
+        }
+      });
+      
+      // Add all receivers that are in the config file but not registered
       receivers.forEach((receiver: { name:string; ip_address: string }) => {
         const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
         if(!isRegistered) {
@@ -101,12 +109,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     // Push already registered accessory
     this.accessories.push(accessory);
-
-    const receivers: { name: string; ip_address:string }[] = this.config.receivers;
-    const needsRemoving = !receivers.some(receiver => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
-    if (needsRemoving) {
-      this.removeAudioReceiverAccessory(accessory);
-    }
   }
 
   addAudioReceiverAccessory = (name: string, ip: string) => {
