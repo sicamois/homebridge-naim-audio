@@ -67,12 +67,11 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     // probably parse config or something here
     this.log.debug('Naim Uniti : Config - ' + JSON.stringify(config));
+    const receivers: any[] = this.config.receivers;
+    this.log.debug('Naim Uniti : receivers - ' + JSON.stringify(receivers));
 
-    log.info('Naim Uniti Platform platform finished initializing!');
-
-    // Parse config file to find new reveivers to register
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.config.receivers.forEach((receiver: any) => {
+    receivers.forEach((receiver: any) => {
       const isRegistered = this.accessories.some((accessory) => {
         accessory.displayName === receiver.name;
       });
@@ -80,6 +79,8 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
       }
     });
+
+    this.log.info('Naim Uniti Platform platform finished initializing!');
 
     /*
      * When this event is fired, homebridge restored all cached accessories from disk and did call their respective
