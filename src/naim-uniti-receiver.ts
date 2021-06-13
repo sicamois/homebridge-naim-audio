@@ -103,7 +103,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
 
     const receivers: { name: string; ip_address:string }[] = this.config.receivers;
-    const needsRemoving = !receivers.some(receiver => receiver.name === accessory.displayName || receiver.ip_address === accessory.context.ip);
+    const needsRemoving = !receivers.some(receiver => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
     if (needsRemoving) {
       this.removeAudioReceiverAccessory(accessory);
     }
