@@ -13,7 +13,7 @@
       "Receivers": {
         "type": "array",
         "items": {
-          "title": "Receivers",
+          "title": "receivers",
           "type": "object",
           "properties": {
             "name": {
