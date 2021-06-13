@@ -278,7 +278,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         });
       });
 
-    const informationService = new hap.Service.AccessoryInformation()
+    const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
     
