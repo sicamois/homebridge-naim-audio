@@ -81,6 +81,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       const receivers = this.config.receivers;
       this.log.debug('Naim Uniti : receivers - ' + JSON.stringify(receivers));
       this.log.debug('Naim Uniti : Registered accessories : %n', this.accessories.length);
+      this.accessories.map(accessory => {
+        this.log.debug('Naim Uniti : Accesory *%s*', accessory.displayName, accessory.UUID);
+      });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       receivers.forEach((receiver: any) => {
         const isRegistered = this.accessories.some((accessory) => {
