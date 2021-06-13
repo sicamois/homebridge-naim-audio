@@ -107,7 +107,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       this.log('%s identified!', accessory.displayName);
     });
 
-    this.setServices(accessory);
 
     this.accessories.push(accessory);
   }
