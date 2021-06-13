@@ -106,9 +106,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
       this.log('%s identified!', accessory.displayName);
     });
-
-
-    this.accessories.push(accessory);
   }
 
   setServices = (accessory: PlatformAccessory<context>) => {
@@ -381,5 +378,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
       accessory,
     ]);
+    this.accessories.push(accessory);
   };
 }
