@@ -14,7 +14,7 @@ import {
 import axios from 'axios';
 
 const PLUGIN_NAME = 'homebridge-naim-uniti-reveiver';
-const PLATFORM_NAME = 'NaimUnitiReceiver';
+const PLATFORM_NAME = 'NaimUnitiPlatform';
 const NAIM_API_PORT = 15081;
 
 /*
