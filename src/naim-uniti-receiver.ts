@@ -76,9 +76,10 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
      * This event can also be used to start discovery of new accessories.
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
-      log.info("Example platform 'didFinishLaunching'");
+      log.info('Example platform didFinishLaunching');
 
       // Parse config file to find new reveivers to register
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.config.receivers.forEach((receiver: any) => {
         const isRegistered = this.accessories.some((accessory) => {
           accessory.displayName === receiver.name;
@@ -116,7 +117,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
 
     const atomService = new hap.Service.Television(
       accessory.displayName,
-      'Naim Unity'
+      'Naim Unity',
     );
     atomService
       .getCharacteristic(hap.Characteristic.Active)
@@ -126,7 +127,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
             const isActive = returnedValue === 'on';
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
-              isActive);
+              isActive,
+            );
             return isActive;
           })
           .catch((error) => {
@@ -140,7 +142,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
           .then((_) => {
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
-              value as boolean);
+              value as boolean,
+            );
           })
           .catch((error) => {
             handleError(error);
@@ -150,7 +153,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
     atomService.setCharacteristic(hap.Characteristic.ActiveIdentifier, 1);
     atomService.setCharacteristic(
       hap.Characteristic.ConfiguredName,
-      accessory.displayName);
+      accessory.displayName,
+    );
 
     atomService
       .getCharacteristic(hap.Characteristic.CurrentMediaState)
@@ -171,7 +175,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
             }
             atomService.updateCharacteristic(
               hap.Characteristic.CurrentMediaState,
-              mediaState);
+              mediaState,
+            );
             return mediaState;
           })
           .catch((error) => {
@@ -201,7 +206,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
             }
             atomService.updateCharacteristic(
               hap.Characteristic.CurrentMediaState,
-              mediaState);
+              mediaState,
+            );
             return mediaState;
           })
           .catch((error) => {
@@ -217,8 +223,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
         });
       });
 
-    const atomSpeakerService = new hap.Service.TelevisionSpeaker(
-      accessory.displayName + 'Service');
+    const atomSpeakerService = new hap.Service.TelevisionSpeaker(accessory.displayName + 'Service');
 
     atomSpeakerService
       .getCharacteristic(hap.Characteristic.Mute)
@@ -228,7 +233,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
             const isMuted = returnedValue === '1';
             atomSpeakerService.updateCharacteristic(
               hap.Characteristic.Mute,
-              isMuted);
+              isMuted,
+            );
             return isMuted;
           })
           .catch((error) => {
@@ -252,7 +258,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
               const volume = parseInt(returnedValue);
               atomSpeakerService.updateCharacteristic(
                 hap.Characteristic.Volume,
-                volume
+                volume,
               );
               return volume;
             }
@@ -293,7 +299,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
       path: string,
       key: string,
       valueToSet: string,
-      forceGet = false) => {
+      forceGet = false,
+    ) => {
       const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
       this.log.debug(
         'naimApiCall - PUT ' +
@@ -303,7 +310,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
           ' into ' +
           key +
           '@' +
-          apiURL
+          apiURL,
       );
       if (!forceGet) {
         axios.put(apiURL).catch((error) => {
@@ -323,19 +330,22 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
           this.log.error(
             'Naim receiver emited a bad response (On : %s - Details : %s)',
             url,
-            error.message);
+            error.message,
+          );
         } else if (error.request) {
           // client never received a response, or request never left
           this.log.error(
             'Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)',
             url,
-            error.message);
+            error.message,
+          );
         } else {
           // Not a network error
           this.log.error(
             'Other request error (On : %s - Details : %s)',
             url,
-            error.message);
+            error.message,
+          );
         }
       } else {
         // Not an error from the request
@@ -352,7 +362,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
     const accessory = new Accessory<context>(
       name,
       uuid,
-      hap.Categories.AUDIO_RECEIVER
+      hap.Categories.AUDIO_RECEIVER,
     );
 
     accessory.context = { ip };
