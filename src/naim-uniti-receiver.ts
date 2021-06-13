@@ -80,6 +80,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       this.log.debug('Naim Uniti : Config - ' + JSON.stringify(config));
       const receivers = this.config.receivers;
       this.log.debug('Naim Uniti : receivers - ' + JSON.stringify(receivers));
+      this.log.debug('Naim Uniti : Registered accessories : %n', this.accessories.length);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       receivers.forEach((receiver: any) => {
         const isRegistered = this.accessories.some((accessory) => {
@@ -114,6 +115,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       return;
     }
 
+    this.log.debug('setServices');
     const baseURL = 'http://' + accessory.context.ip + ':' + NAIM_API_PORT;
 
     const atomService = new hap.Service.Television(
@@ -279,10 +281,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     const informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
-
+    
+    this.log.debug('Linking atomSpeakerService');
     atomService.addLinkedService(atomSpeakerService);
+    this.log.debug('Adding atomService');
     accessory.addService(atomService);
+    this.log.debug('Adding informationService');
     accessory.addService(informationService);
+    this.log.debug('Finished adding services');
 
     // Utility functions
     const naimApiGet = async (path: string, key: string) => {
@@ -368,7 +374,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     accessory.context = { ip };
 
-    this.setServices(accessory); // abusing the configureAccessory here
+    this.setServices(accessory);
 
     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
       accessory,
