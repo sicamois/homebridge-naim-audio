@@ -77,19 +77,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       log.info('Naim Uniti platform didFinishLaunching');
-      this.log.debug('Naim Uniti : Config - ' + JSON.stringify(config));
+      
       const receivers = this.config.receivers;
-      this.log.debug('Naim Uniti : receivers - ' + JSON.stringify(receivers));
-      this.log.debug('Naim Uniti : Registered accessories : %n', this.accessories.length);
+      
+      this.log.debug('Naim Uniti : Registered accessories : %s', this.accessories.length);
       this.accessories.map(accessory => {
-        this.log.debug('Naim Uniti : Accesory *%s*', accessory.displayName, accessory.UUID);
+        this.log.debug('Naim Uniti : Accesory *%s* (UUID:%s)', accessory.displayName, accessory.UUID);
       });
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      receivers.forEach((receiver: any) => {
+      receivers.forEach((receiver: { name:string; ip_address: string }) => {
         const isRegistered = this.accessories.some((accessory) => {
           accessory.displayName === receiver.name;
         });
         if (!isRegistered) {
+          this.log.debug('Receiver %s not registerd. Adding', receiver.name);
           this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
         }
       });
@@ -375,9 +377,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     this.setServices(accessory);
 
+    this.accessories.push(accessory);
+
     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
       accessory,
     ]);
-    this.accessories.push(accessory);
   };
 }
