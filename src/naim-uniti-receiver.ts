@@ -67,7 +67,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     // probably parse config or something here
     this.log.debug('Naim Uniti : Config - ' + JSON.stringify(config));
-    const receivers: any[] = this.config.receivers;
+    const receivers: any[] = this.config.Receivers;
     this.log.debug('Naim Uniti : receivers - ' + JSON.stringify(receivers));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
