@@ -18,5 +18,5 @@
   },
   "include": [
     "src"
-  ]
+, "old-src/naim-uniti-receiver.ts"  ]
 }
