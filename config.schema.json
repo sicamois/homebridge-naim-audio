@@ -10,7 +10,7 @@
         "default": "NaimUniti",
         "description": "Name for the log."
       },
-      "Receivers": {
+      "receivers": {
         "type": "array",
         "items": {
           "title": "receivers",
