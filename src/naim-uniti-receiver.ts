@@ -70,6 +70,17 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     log.info('Naim Uniti Platform platform finished initializing!');
 
+    // Parse config file to find new reveivers to register
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.config.receivers.forEach((receiver: any) => {
+      const isRegistered = this.accessories.some((accessory) => {
+        accessory.displayName === receiver.name;
+      });
+      if (!isRegistered) {
+        this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
+      }
+    });
+
     /*
      * When this event is fired, homebridge restored all cached accessories from disk and did call their respective
      * `configureAccessory` method for all of them. Dynamic Platform plugins should only register new accessories
@@ -78,17 +89,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       log.info('Naim Uniti platform didFinishLaunching');
-
-      // Parse config file to find new reveivers to register
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.config.receivers.forEach((receiver: any) => {
-        const isRegistered = this.accessories.some((accessory) => {
-          accessory.displayName === receiver.name;
-        });
-        if (!isRegistered) {
-          this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
-        }
-      });
     });
   }
 
