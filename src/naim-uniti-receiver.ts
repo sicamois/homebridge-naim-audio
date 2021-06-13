@@ -51,6 +51,10 @@ export = (api: API) => {
 
 type context = {
   ip: string;
+  powerOn: boolean;
+  currentMediaState: number;
+  mute: boolean;
+  volume: number;
 };
 
 class NaimUnitiPlatform implements DynamicPlatformPlugin {
@@ -122,7 +126,13 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       hap.Categories.AUDIO_RECEIVER,
     );
 
-    accessory.context = { ip };
+    accessory.context = {
+      ip: ip,
+      powerOn: false,
+      currentMediaState: hap.Characteristic.CurrentMediaState.STOP,
+      mute: false,
+      volume: 0,
+    };
 
     this.setServices(accessory);
 
@@ -161,16 +171,19 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Active,
               isActive,
             );
+            accessory.context.powerOn = isActive;
             return isActive;
           })
           .catch((error) => {
             handleError(error);
-            return null;
+            return false;
           });
-        return null;
+        return !accessory.context.powerOn;
       })
       .onSet(async (value) => {
-        naimApiPut('/power', 'system', (value as boolean) ? 'on' : 'lona')
+        const isActive = value as boolean;
+        accessory.context.powerOn = isActive;
+        naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
           .then((_) => {
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
@@ -205,18 +218,15 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 mediaState = hap.Characteristic.CurrentMediaState.STOP;
                 break;
             }
-            atomService.updateCharacteristic(
-              hap.Characteristic.CurrentMediaState,
-              mediaState,
-            );
+            accessory.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
             handleError(error);
-            return null;
+            return hap.Characteristic.CurrentMediaState.STOP;
           });
         // return as soon as possible, update on the resoution of the async function
-        return null;
+        return accessory.context.currentMediaState;
       });
 
     atomService
@@ -240,6 +250,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.CurrentMediaState,
               mediaState,
             );
+            accessory.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
@@ -250,9 +261,12 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         return null;
       })
       .onSet(async () => {
-        naimApiPut('/nowplaying', 'cmd', 'playpause', true).catch((error) => {
-          handleError(error);
-        });
+        naimApiPut('/nowplaying', 'cmd', 'playpause', true)
+          .catch((error) => {
+            handleError(error);
+            (accessory.context.currentMediaState === 0) ? 1 : 0;
+          });
+        (accessory.context.currentMediaState === 0) ? 1 : 0;
       });
 
     const atomSpeakerService = new hap.Service.TelevisionSpeaker(accessory.displayName + 'Service');
@@ -267,18 +281,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Mute,
               isMuted,
             );
+            accessory.context.mute = isMuted;
             return isMuted;
           })
           .catch((error) => {
             handleError(error);
-            return null;
+            return !accessory.context.mute;
           });
-        return null;
+        return !accessory.context.mute;
       })
       .onSet(async (value) => {
         naimApiPut('/levels/room', 'mute', value as string).catch((error) => {
           handleError(error);
+          accessory.context.mute = !accessory.context.mute;
         });
+        accessory.context.mute = !accessory.context.mute;
       });
 
     atomSpeakerService
@@ -286,25 +303,26 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       .onGet(async () => {
         naimApiGet('/levels/room', 'volume')
           .then((returnedValue) => {
+            let volume = 0;
             if (returnedValue) {
-              const volume = parseInt(returnedValue);
-              atomSpeakerService.updateCharacteristic(
-                hap.Characteristic.Volume,
-                volume,
-              );
-              return volume;
+              volume = +returnedValue;
             }
+            accessory.context.volume = volume;
+            return volume;
           })
           .catch((error) => {
             handleError(error);
-            return null;
+            return 0;
           });
-        return null;
+        return accessory.context.volume;
       })
       .onSet(async (value) => {
+        const intialVolume = accessory.context.volume;
         naimApiPut('/levels/room', 'volume', value as string).catch((error) => {
           handleError(error);
+          accessory.context.volume = intialVolume;
         });
+        accessory.context.volume = +value;
       });
 
     const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
