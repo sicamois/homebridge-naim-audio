@@ -46,14 +46,14 @@ export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
 
-  api.registerPlatform(PLATFORM_NAME, ExampleDynamicPlatform);
+  api.registerPlatform(PLATFORM_NAME, NaimUnitiPlatform);
 };
 
 type context = {
   ip: string;
 };
 
-class ExampleDynamicPlatform implements DynamicPlatformPlugin {
+class NaimUnitiPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
   private readonly config: PlatformConfig;
@@ -66,8 +66,9 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
     this.config = config;
 
     // probably parse config or something here
+    this.log.debug('Naim Uniti : Config - ' + JSON.stringify(config));
 
-    log.info('Example platform finished initializing!');
+    log.info('Naim Uniti Platform platform finished initializing!');
 
     /*
      * When this event is fired, homebridge restored all cached accessories from disk and did call their respective
@@ -76,7 +77,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
      * This event can also be used to start discovery of new accessories.
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
-      log.info('Example platform didFinishLaunching');
+      log.info('Naim Uniti platform didFinishLaunching');
 
       // Parse config file to find new reveivers to register
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,7 +97,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
    * It should be used to setup event handlers for characteristics and update respective values.
    */
   configureAccessory(accessory: PlatformAccessory<context>): void {
-    this.log('Configuring accessory %s', accessory.displayName);
+    this.log('Configuring Uniti receiver %s', accessory.displayName);
 
     accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
       this.log('%s identified!', accessory.displayName);
