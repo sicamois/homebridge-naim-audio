@@ -378,9 +378,13 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.setServices(accessory);
 
     this.accessories.push(accessory);
-
-    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
-      accessory,
-    ]);
+    try {
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
+        accessory,
+      ]);
+    } catch (error) {
+      this.log.warn('Accessory alredy registered. Skipping');
+    }
+    
   };
 }
