@@ -58,12 +58,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
   private readonly api: API;
   private readonly config: PlatformConfig;
 
-  private readonly accessories: PlatformAccessory[] = [];
+  private readonly accessories: PlatformAccessory<context>[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
     this.api = api;
     this.config = config;
+    this.accessories = [];
+
 
     // probably parse config or something here
 
@@ -80,18 +82,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       
       const receivers = this.config.receivers;
       
-      this.log.debug('Naim Uniti : Registered accessories : %s', this.accessories.length);
-      this.accessories.map(accessory => {
-        this.log.debug('Naim Uniti : Accesory *%s* (UUID:%s)', accessory.displayName, accessory.UUID);
-      });
-      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       receivers.forEach((receiver: { name:string; ip_address: string }) => {
-        const isRegistered = this.accessories.some((accessory) => {
-          accessory.displayName === receiver.name;
-        });
-        if (!isRegistered) {
-          this.log.debug('Receiver %s not registerd. Adding', receiver.name);
+        const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
+        if(!isRegistered) {
           this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
         }
       });
@@ -103,11 +97,17 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
    * It should be used to setup event handlers for characteristics and update respective values.
    */
   configureAccessory(accessory: PlatformAccessory<context>): void {
-    this.log('Configuring Uniti receiver %s', accessory.displayName);
+    this.log('Configuring Uniti accessory %s', accessory.displayName);
 
-    accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-      this.log('%s identified!', accessory.displayName);
-    });
+    // Remove existing services
+    accessory.services.map(service => accessory.removeService(service));
+
+    //Resetup services
+    this.setServices(accessory);
+
+    // Push already registered accessory
+    this.accessories.push(accessory);
+
   }
 
   setServices = (accessory: PlatformAccessory<context>) => {
@@ -377,7 +377,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     this.setServices(accessory);
 
-    this.accessories.push(accessory);
     try {
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
         accessory,
