@@ -76,7 +76,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     // probably parse config or something here
     const ssdp = new Client;
     ssdp.on('response', (headers, statusCode, rinfo) => {
-      this.log.warn('Found device @%s (%s) on port %s of size %s', rinfo.address, rinfo.family, rinfo.port, rinfo.size);
+      this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
     });
 
     ssdp.search('ssdp:all');
