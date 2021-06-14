@@ -13,7 +13,7 @@ import {
   Service,
 } from 'homebridge';
 import axios from 'axios';
-import ssdp from 'node-upnp-ssdp';
+import { Client } from 'node-ssdp';
 
 const PLUGIN_NAME = 'homebridge-naim-uniti-receiver';
 const PLATFORM_NAME = 'NaimUnitiPlatform';
@@ -74,14 +74,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
 
     // probably parse config or something here
-    ssdp.on('DeviceFound', this.log.warn);
-    ssdp.on('DeviceAvailable', this.log.warn);
-    ssdp.on('DeviceUnavailable', this.log.warn);
-    ssdp.on('DeviceUpdate', this.log.warn);
-
-    ssdp.mSearch();
-
-    setTimeout(ssdp.close, 20000);
+    const ssdp = new Client;
+    ssdp.on('response', (headers, statusCode, rinfo) => {
+      this.log.warn('Found device @%s (%s) on port %s of size %s', rinfo.address, rinfo.family, rinfo.port, rinfo.size);
+    });
 
     this.log.info('Naim Uniti Platform platform finished initializing!');
 
