@@ -87,6 +87,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       // Force ssdp discovery to stop after 10 secondes
       setTimeout( () => {
         ssdp.stop();
+        if (this.receivers.length === 0) {
+          this.log.warn('No Naim Audio device found on your network!');
+        }
       }, 10000);
     });
   }
@@ -129,6 +132,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               uuid: device.UDN[0],
             };
             this.log.info('%s discovered ! It is a %s %s', receiver.name, receiver.manufacturer, receiver.modelName);
+            this.receivers.push(receiver);
             andProcessTheReceiver(receiver);
           }
         } else {
@@ -164,7 +168,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
         this.accessories.push(receiverAccessory);
       });
-
   };
 
   private readonly setServices = async (accessory: PlatformAccessory<context>, receiver: receiver) => {
