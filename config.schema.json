@@ -1,4 +1,5 @@
 {
     "pluginAlias": "NaimAudio",
-    "pluginType": "platform"
+    "pluginType": "platform",
+    "name": "NaimAudio"
 }
