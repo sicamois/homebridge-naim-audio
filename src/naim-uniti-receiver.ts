@@ -409,10 +409,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     }
 
 
-    this.log.debug('Adding atomService');
-    receiver.addService(atomService);
     this.log.debug('Adding atomSpeakerService');
     receiver.addService(atomSpeakerService);
+    this.log.debug('Adding atomService');
+    receiver.addService(atomService);
     this.log.debug('Finished adding services');
 
   };
