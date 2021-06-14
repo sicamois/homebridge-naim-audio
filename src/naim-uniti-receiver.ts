@@ -112,7 +112,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       xmlParser.parseString(response.data, (error: any, result: any) => {
         if(error === null) {
-          this.log.warn('Parse XML response : %s', result);
+          this.log.warn('Parse XML response : %o', result);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
