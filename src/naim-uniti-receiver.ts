@@ -61,23 +61,6 @@ type context = {
   volume: number;
 };
 
-
-/*
-    deviceType: [ 'urn:schemas-upnp-org:device:MediaRenderer:2' ],
-    friendlyName: [ 'Ampli' ],
-    manufacturer: [ 'Naim Audio' ],
-    manufacturerURL: [ 'http://www.naimaudio.com/' ],
-    modelDescription: [ 'Naim all-in-one audio player' ],
-    modelName: [ 'Uniti Atom' ],
-    modelNumber: [ '20-004-0028' ],
-    modelURL: [ 'https://www.naimaudio.com/product/uniti-atom' ],
-    serialNumber: [ '461540' ],
-    UDN: [ 'uuid:716e6e7e-85e8-4076-b210-2d225d709bf0' ],
-    iconList: [ [Object] ],
-    serviceList: [ [Object] ],
-    presentationURL: [ 'http://192.168.0.20/' ],
-    'dlna:X_DLNADOC': [ 'DMR-1.50' ]
-*/
 type receiver = {
   name: string;
   ip_address: string;
@@ -113,7 +96,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
      * This event can also be used to start discovery of new accessories.
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
-      log.info('Naim Uniti platform didFinishLaunching');
 
       // Find Naim receiver via ssdp
       const ssdp = new Client;
@@ -121,7 +103,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         this.extractNaimReceiverFrom(headers, remoteInfos, this.addAudioReceiverAccessory);
       });
 
-      this.log.info('Start discovering Naim Audio devices');
+      this.log.info('Start discovering Naim Audio devices with uPnP');
       ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
     });
   }
@@ -174,7 +156,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
   };
 
   private addAudioReceiverAccessory = (receiver: receiver) => {
-    this.log.info('Adding new accessory with name %s', receiver.name);
+    this.log.info('Configuring new accessory with name %s', receiver.name);
 
     // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
     const receiverUuid = hap.uuid.generate(receiver.name);
@@ -194,7 +176,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     this.setServices(receiverAccessory, receiver)
       .then( () => {
-        this.log.info('Finish adding accessory with name %s', receiver.name);
+        this.log.info('Accessory %s fully configured !', receiver.name);
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
         this.accessories.push(receiverAccessory);
