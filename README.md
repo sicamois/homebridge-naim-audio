@@ -32,3 +32,10 @@ Your config.json file must include the following for the plugin to be active.
   }
 ]
 ```
+
+## Credits
+
+This plugin uses third-aprties libraries :
+- [axios](https://github.com/axios/axios) developed by [axios](https://axios-http.com)
+- [node-ssdp](https://github.com/diversario/node-ssdp) developed by Ilya Shaisultanov ([diversario](https://github.com/diversario))
+- [node-xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) developed by Marek Kubica ([Leonidas-from-XIV](https://github.com/Leonidas-from-XIV))
