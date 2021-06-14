@@ -60,22 +60,50 @@ type context = {
   volume: number;
 };
 
+
+/*
+    deviceType: [ 'urn:schemas-upnp-org:device:MediaRenderer:2' ],
+    friendlyName: [ 'Ampli' ],
+    manufacturer: [ 'Naim Audio' ],
+    manufacturerURL: [ 'http://www.naimaudio.com/' ],
+    modelDescription: [ 'Naim all-in-one audio player' ],
+    modelName: [ 'Uniti Atom' ],
+    modelNumber: [ '20-004-0028' ],
+    modelURL: [ 'https://www.naimaudio.com/product/uniti-atom' ],
+    serialNumber: [ '461540' ],
+    UDN: [ 'uuid:716e6e7e-85e8-4076-b210-2d225d709bf0' ],
+    iconList: [ [Object] ],
+    serviceList: [ [Object] ],
+    presentationURL: [ 'http://192.168.0.20/' ],
+    'dlna:X_DLNADOC': [ 'DMR-1.50' ]
+*/
+type receiver = {
+  name: string;
+  ip_address: string;
+  manufacturer?: string;
+  manufacturerURL?: string;
+  modelName?: string;
+  modelNumber?: string;
+  serialNumber?: string;
+};
+
 class NaimUnitiPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
   private readonly config: PlatformConfig;
 
   private readonly accessories: PlatformAccessory<context>[];
+  private readonly receivers: receiver[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
     this.api = api;
     this.config = config;
     this.accessories = [];
-
+    this.receivers = [];
 
     // probably parse config or something here
-
+    // Find Naim receiver via ssdp
     const ssdp = new Client;
     ssdp.on('response', async (headers, statusCode, rinfo) => {
       //this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
@@ -89,7 +117,16 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           if (device) {
             const manufacturer: string[] = device.manufacturer;
             if (manufacturer && manufacturer[0].includes('Naim') ) {
-              this.log.warn(device);
+              this.receivers.push({
+                name: device.friendlyName[0],
+                ip_address: rinfo.address,
+                manufacturer: device.manufacturer[0],
+                manufacturerURL: device.manufacturerURL[0],
+                modelName: device.manufacturerURL[0],
+                modelNumber: device.modelNumber[0],
+                serialNumber: device.manufacturerURL[0],
+              });
+              this.log.warn('%o', this.receivers[this.receivers.length - 1]);
             }
           }
         } else {
