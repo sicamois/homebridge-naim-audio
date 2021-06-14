@@ -240,7 +240,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         this.log.debug('Get Active Init - context: %s', JSON.stringify(accessory.context));
         naimApiGet('/power', 'system')
           .then((returnedValue) => {
-            const isActive = returnedValue === 'on';
+            const isActive = (returnedValue === 'on');
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
               isActive,
@@ -254,16 +254,16 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             return false;
           });
         this.log.debug('Get Active immediate return - context: %s', JSON.stringify(accessory.context));
-        return !accessory.context.powerOn;
+        return accessory.context.powerOn;
       })
       .onSet(async (value) => {
-        const isActive = value as boolean;
+        const isActive = (value as boolean);
         accessory.context.powerOn = isActive;
         naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
           .then((_) => {
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
-              value as boolean,
+              isActive,
             );
           })
           .catch((error) => {
