@@ -93,7 +93,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           }
         }, 10000);
       } catch (error) {
-        this.log.error('An error occured during discoering : %s', error.message);
+        this.log.error('An error occured during discovering : %s', error.message);
       }
     });
   }
