@@ -120,14 +120,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.log.info('Adding new accessory with name %s', name);
 
     // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
-    const uuid = hap.uuid.generate(name);
-    const accessory = new Accessory<context>(
+    const receiverUuid = hap.uuid.generate('receiver'+name);
+    const receiverAccessory = new Accessory<context>(
       name,
-      uuid,
+      receiverUuid,
       hap.Categories.AUDIO_RECEIVER,
     );
 
-    accessory.context = {
+    receiverAccessory.context = {
       ip: ip,
       powerOn: false,
       currentMediaState: hap.Characteristic.CurrentMediaState.STOP,
@@ -135,11 +135,27 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       volume: 0,
     };
 
-    this.setServices(accessory)
+    // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
+    const speakerUuid = hap.uuid.generate('speaker'+name);
+    const speakerAccessory = new Accessory<context>(
+      name + 'Speaker',
+      speakerUuid,
+      hap.Categories.SPEAKER,
+    );
+
+    speakerAccessory.context = {
+      ip: ip,
+      powerOn: false,
+      currentMediaState: hap.Characteristic.CurrentMediaState.STOP,
+      mute: false,
+      volume: 0,
+    };
+
+    this.setServices(receiverAccessory, speakerAccessory)
       .then( () => {
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
-        this.accessories.push(accessory);
+        this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory, speakerAccessory]);
+        this.accessories.push(receiverAccessory, speakerAccessory);
       });
 
   };
@@ -151,14 +167,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.splice(0, 1, accessory);
   };
 
-  setServices = async (accessory: PlatformAccessory<context>) => {
-    if (!accessory.context || !accessory.context.ip) {
-      this.log.error('No IP Address configured on %s', accessory.displayName);
+  setServices = async (receiver: PlatformAccessory<context>, speaker: PlatformAccessory<context>) => {
+    if (!receiver.context || !receiver.context.ip) {
+      this.log.error('No IP Address configured on %s', receiver.displayName);
       return;
     }
 
     this.log.debug('setServices');
-    const baseURL = 'http://' + accessory.context.ip + ':' + NAIM_API_PORT;
+    const baseURL = 'http://' + receiver.context.ip + ':' + NAIM_API_PORT;
 
     // Utility functions
     const naimApiGet = async (path: string, key: string) => {
@@ -231,7 +247,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     };
 
     const atomService = new hap.Service.Television(
-      accessory.displayName,
+      receiver.displayName,
       'Naim Unity',
     );
     atomService
@@ -244,18 +260,18 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Active,
               isActive,
             );
-            accessory.context.powerOn = isActive;
+            receiver.context.powerOn = isActive;
             return isActive;
           })
           .catch((error) => {
             handleError(error);
             return false;
           });
-        return accessory.context.powerOn;
+        return receiver.context.powerOn;
       })
       .onSet(async (value) => {
         const isActive = (value as boolean);
-        accessory.context.powerOn = isActive;
+        receiver.context.powerOn = isActive;
         naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
           .catch((error) => {
             handleError(error);
@@ -265,7 +281,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     atomService.setCharacteristic(hap.Characteristic.ActiveIdentifier, 1);
     atomService.setCharacteristic(
       hap.Characteristic.ConfiguredName,
-      accessory.displayName,
+      receiver.displayName,
     );
 
     atomService
@@ -285,7 +301,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 mediaState = hap.Characteristic.CurrentMediaState.STOP;
                 break;
             }
-            accessory.context.currentMediaState = mediaState;
+            receiver.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
@@ -293,7 +309,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             return hap.Characteristic.CurrentMediaState.STOP;
           });
         // return as soon as possible, update on the resoution of the async function
-        return accessory.context.currentMediaState;
+        return receiver.context.currentMediaState;
       });
 
     atomService
@@ -317,26 +333,26 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.CurrentMediaState,
               mediaState,
             );
-            accessory.context.currentMediaState = mediaState;
+            receiver.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
             handleError(error);
-            return accessory.context.currentMediaState;
+            return receiver.context.currentMediaState;
           });
         // return as soon as possible, update on the resoution of the async function
-        return accessory.context.currentMediaState;
+        return receiver.context.currentMediaState;
       })
       .onSet(async () => {
         naimApiPut('/nowplaying', 'cmd', 'playpause', true)
           .catch((error) => {
             handleError(error);
-            (accessory.context.currentMediaState === 0) ? 1 : 0;
+            (receiver.context.currentMediaState === 0) ? 1 : 0;
           });
-        (accessory.context.currentMediaState === 0) ? 1 : 0;
+        (receiver.context.currentMediaState === 0) ? 1 : 0;
       });
 
-    const atomSpeakerService = new hap.Service.TelevisionSpeaker(accessory.displayName + 'Service');
+    const atomSpeakerService = new hap.Service.Speaker(speaker.displayName + 'Service');
 
     atomSpeakerService
       .getCharacteristic(hap.Characteristic.Mute)
@@ -348,21 +364,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Mute,
               isMuted,
             );
-            accessory.context.mute = isMuted;
+            speaker.context.mute = isMuted;
             return isMuted;
           })
           .catch((error) => {
             handleError(error);
-            return !accessory.context.mute;
+            return speaker.context.mute;
           });
-        return !accessory.context.mute;
+        return speaker.context.mute;
       })
       .onSet(async (value) => {
         naimApiPut('/levels/room', 'mute', value as string).catch((error) => {
           handleError(error);
-          accessory.context.mute = !accessory.context.mute;
+          speaker.context.mute = !speaker.context.mute;
         });
-        accessory.context.mute = !accessory.context.mute;
+        speaker.context.mute = !speaker.context.mute;
       });
 
     atomSpeakerService
@@ -374,44 +390,55 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             if (returnedValue) {
               volume = +returnedValue;
             }
-            accessory.context.volume = volume;
+            speaker.context.volume = volume;
             return volume;
           })
           .catch((error) => {
             handleError(error);
             return 0;
           });
-        return accessory.context.volume;
+        return speaker.context.volume;
       })
       .onSet(async (value) => {
-        const intialVolume = accessory.context.volume;
+        const intialVolume = speaker.context.volume;
         naimApiPut('/levels/room', 'volume', value as string).catch((error) => {
           handleError(error);
-          accessory.context.volume = intialVolume;
+          speaker.context.volume = intialVolume;
         });
-        accessory.context.volume = +value;
+        speaker.context.volume = +value;
       });
 
     this.log.debug('Adding informationService');
-    let informationService = accessory.getService(hap.Service.AccessoryInformation);
-    if (!informationService) {
-      informationService = accessory.addService(hap.Service.AccessoryInformation);
+    let receiverInformationService = receiver.getService(hap.Service.AccessoryInformation);
+    if (!receiverInformationService) {
+      receiverInformationService = receiver.addService(hap.Service.AccessoryInformation);
     }
 
-    informationService
+    let speakerInformationService = speaker.getService(hap.Service.AccessoryInformation);
+    if (!speakerInformationService) {
+      speakerInformationService = speaker.addService(hap.Service.AccessoryInformation);
+    }
+
+    receiverInformationService
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
+      .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
+
+    speakerInformationService
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
 
     const serialNumber = await naimApiGet('/system', 'hardwareSerial');
     if (serialNumber) {
       this.log.debug('Setting serial number %s', serialNumber);
-      informationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
+      receiverInformationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
+      speakerInformationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
     }
 
-    this.log.debug('Linking atomSpeakerService');
-    atomService.addLinkedService(atomSpeakerService);
+
     this.log.debug('Adding atomService');
-    accessory.addService(atomService);
+    receiver.addService(atomService);
+    this.log.debug('Adding atomSpeakerService');
+    speaker.addService(atomSpeakerService);
     this.log.debug('Finished adding services');
 
   };
