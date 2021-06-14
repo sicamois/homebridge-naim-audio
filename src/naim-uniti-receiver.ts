@@ -115,8 +115,8 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
-            const manufacturer: string = device.manufacturer[0];
-            if (manufacturer && manufacturer.includes('Naim') ) {
+            const manufacturer: string[] = device.manufacturer;
+            if (manufacturer && manufacturer[0].includes('Naim') ) {
               this.log.warn('Naim device found !');
               this.receivers.push({
                 name: device.friendlyName[0],
