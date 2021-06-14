@@ -10,6 +10,7 @@ import {
   PlatformAccessory,
   PlatformAccessoryEvent,
   PlatformConfig,
+  Service,
 } from 'homebridge';
 import axios from 'axios';
 
@@ -397,7 +398,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         accessory.context.volume = +value;
       });
 
-    const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
+    //const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
+    const informationService = accessory.addService(hap.Service.AccessoryInformation);
+    informationService
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
 
@@ -412,7 +415,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.log.debug('Adding atomService');
     accessory.addService(atomService);
     this.log.debug('Adding informationService');
-    accessory.addService(informationService);
+    //accessory.addService(informationService);
     this.log.debug('Finished adding services');
 
   };
