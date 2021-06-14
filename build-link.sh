@@ -1,4 +1,4 @@
 #! /bin/sh
-git pull
+git pull 
 npm run build
 sudo npm link
