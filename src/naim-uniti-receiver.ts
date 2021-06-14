@@ -74,9 +74,12 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
 
     // probably parse config or something here
+
     const ssdp = new Client;
-    ssdp.on('response', (headers, statusCode, rinfo) => {
-      this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
+    ssdp.on('response', async (headers, statusCode, rinfo) => {
+      //this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
+      const response = await axios({ responseType : 'text', url : headers.LOCATION });
+      this.log.warn('Found Device %s', response);
     });
 
     ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
