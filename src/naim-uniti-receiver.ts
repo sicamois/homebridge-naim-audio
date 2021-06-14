@@ -116,7 +116,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
-            //this.log.warn('Device : %o', device);
+            this.log.warn('Device : %o', device);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const manufacturerArray: any = device.manufacturer;
             if (manufacturerArray) {
