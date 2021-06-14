@@ -82,15 +82,19 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       });
 
       this.log.info('Start discovering Naim Audio devices with uPnP');
-      ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
+      try {
+        ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
 
-      // Force ssdp discovery to stop after 10 secondes
-      setTimeout( () => {
-        ssdp.stop();
-        if (this.receivers.length === 0) {
-          this.log.warn('No Naim Audio device found on your network!');
-        }
-      }, 10000);
+        // Force ssdp discovery to stop after 10 secondes
+        setTimeout( () => {
+          ssdp.stop();
+          if (this.receivers.length === 0) {
+            this.log.warn('No Naim Audio device found on your network!');
+          }
+        }, 10000);
+      } catch (error) {
+        this.log.error('An error occured during discoering : %s', error.message);
+      }
     });
   }
 
@@ -136,7 +140,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             andProcessTheReceiver(receiver);
           }
         } else {
-          this.log.error(error);
+          this.log.error('Unable to parse response from SSDP : %s', error);
         }
       }
     });
