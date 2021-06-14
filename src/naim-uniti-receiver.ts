@@ -117,7 +117,8 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           const device: any = result.root.device;
           if (device) {
             //this.log.warn('Device : %o', device);
-            if (device.manufacturer) {
+            const manufacturerArray: string[] = device.manufacturer;
+            if (manufacturerArray) {
               this.log.warn('Device : %s', device.manufacturer[0]);
               const manufacturer: string = device.manufacturer[0];
               this.log.warn('Found device from %s', manufacturer);
