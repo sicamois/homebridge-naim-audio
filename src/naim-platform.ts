@@ -18,7 +18,7 @@ import { Parser } from 'xml2js';
 import { RemoteInfo } from 'dgram';
 
 const PLUGIN_NAME = 'homebridge-naim-audio';
-const PLATFORM_NAME = 'NaimAudioPlatform';
+const PLATFORM_NAME = 'NaimAudio';
 const NAIM_API_PORT = 15081;
 
 let hap: HAP;
@@ -28,7 +28,7 @@ export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
 
-  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, NaimAudioPlatform);
+  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, NaimAudio);
 };
 
 type context = {
@@ -50,7 +50,7 @@ type receiver = {
   uuid?: string;
 };
 
-class NaimAudioPlatform implements DynamicPlatformPlugin {
+class NaimAudio implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
   private readonly config: PlatformConfig;
@@ -65,7 +65,7 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
     this.accessories = [];
     this.receivers = [];
 
-    this.log.info('Naim Uniti Platform platform finished initializing!');
+    this.log.info('NaimAudio platform finished initializing!');
 
     /*
      * When this event is fired, homebridge restored all cached accessories from disk and did call their respective
