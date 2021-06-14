@@ -336,18 +336,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         (receiver.context.currentMediaState === 0) ? 1 : 0;
       });
 
-    const atomSpeakerService = new hap.Service.SmartSpeaker(receiver.displayName + 'Service');
+    //const atomSpeakerService = new hap.Service.SmartSpeaker(receiver.displayName + 'Service');
 
-    atomSpeakerService
+    atomService
       .getCharacteristic(hap.Characteristic.Mute)
       .onGet(async () => {
         naimApiGet('/levels/room', 'mute')
           .then((returnedValue) => {
             const isMuted = returnedValue === '1';
-            atomSpeakerService.updateCharacteristic(
-              hap.Characteristic.Mute,
-              isMuted,
-            );
             receiver.context.mute = isMuted;
             return isMuted;
           })
@@ -365,7 +361,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         receiver.context.mute = !receiver.context.mute;
       });
 
-    atomSpeakerService
+    atomService
       .getCharacteristic(hap.Characteristic.Volume)
       .onGet(async () => {
         naimApiGet('/levels/room', 'volume')
@@ -409,10 +405,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     }
 
 
-    this.log.debug('Adding atomSpeakerService');
-    receiver.addService(atomSpeakerService);
-    // this.log.debug('Adding atomService');
-    // receiver.addService(atomService);
+    // this.log.debug('Adding atomSpeakerService');
+    // receiver.addService(atomSpeakerService);
+    this.log.debug('Adding atomService');
+    receiver.addService(atomService);
     this.log.debug('Finished adding services');
 
   };
