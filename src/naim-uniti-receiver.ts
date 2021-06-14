@@ -106,18 +106,19 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     // Find Naim receiver via ssdp
     const ssdp = new Client;
     ssdp.on('response', async (headers, _, rinfo) => {
-      this.log.warn('Found device \n%s\n%s', JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
+      //this.log.warn('Found device \n%s\n%s', JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
       const response = await axios({ responseType : 'text', url : headers.LOCATION });
       const xmlParser = new Parser;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       xmlParser.parseString(response.data, (error: any, result: any) => {
         if(error === null) {
-          this.log.warn('Parse XML response : %o', result);
+          //this.log.warn('Parse XML response : %o', result);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
-            this.log.warn('Device : %o', device);
+            //this.log.warn('Device : %o', device);
             if (device.manufacturer) {
+              this.log.warn('Device : %s', device.manufacturer[0]);
               const manufacturer: string = device.manufacturer[0];
               this.log.warn('Found device from %s', manufacturer);
               if (manufacturer.includes('Naim') ) {
