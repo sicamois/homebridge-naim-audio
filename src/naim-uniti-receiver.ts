@@ -114,10 +114,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         if(error === null) {
           //this.log.warn('Parse XML response : %o', result);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const device: any = result.root.device;
+          const device: any = result.root.device[0];
           if (device) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const manufacturer: string = device[0]?.manufacturer[0];
+            const manufacturer: string = device.manufacturer[0];
             if (manufacturer && manufacturer.includes('Naim')) {
               this.log.warn('Naim device found !');
               this.receivers.push({
