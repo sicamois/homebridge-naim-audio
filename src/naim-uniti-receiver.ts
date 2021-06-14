@@ -46,7 +46,7 @@ export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
 
-  api.registerPlatform(PLATFORM_NAME, NaimUnitiPlatform);
+  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, NaimUnitiPlatform);
 };
 
 type context = {
