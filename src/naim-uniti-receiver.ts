@@ -88,7 +88,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           const device: any = result.root.device;
           if (device) {
             const manufacturer: string = device.manufacturer;
-            if (manufacturer.includes('Naim')) {
+            if (manufacturer && manufacturer.includes('Naim')) {
               this.log.warn(device);
             }
           }
