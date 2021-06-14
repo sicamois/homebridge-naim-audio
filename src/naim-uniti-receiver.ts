@@ -147,25 +147,26 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             }
           }
         });
+
+        // Remove all receivers that are not in the config file anymore
+        this.accessories.forEach(accessory => {
+          const needsRemoving = !this.receivers.some((receiver: receiver) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
+          if (needsRemoving) {
+            this.removeAudioReceiverAccessory(accessory);
+          }
+        });
+
+        // Add all receivers that are in the config file but not registered
+        this.receivers.forEach((receiver: receiver) => {
+          const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
+          if(!isRegistered) {
+            this.addAudioReceiverAccessory(receiver);
+          }
+        });
       });
 
       ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
 
-      // Remove all receivers that are not in the config file anymore
-      this.accessories.forEach(accessory => {
-        const needsRemoving = !this.receivers.some((receiver: receiver) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
-        if (needsRemoving) {
-          this.removeAudioReceiverAccessory(accessory);
-        }
-      });
-
-      // Add all receivers that are in the config file but not registered
-      this.receivers.forEach((receiver: receiver) => {
-        const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
-        if(!isRegistered) {
-          this.addAudioReceiverAccessory(receiver);
-        }
-      });
     });
   }
 
