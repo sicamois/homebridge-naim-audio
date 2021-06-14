@@ -125,7 +125,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 ip_address: rinfo.address,
                 manufacturer: device.manufacturer[0],
                 manufacturerURL: device.manufacturerURL[0],
-                modelName: device.manufacturerURL[0],
+                modelName: device.modelName[0],
                 modelNumber: device.modelNumber[0],
                 serialNumber: device.manufacturerURL[0],
               });
