@@ -83,9 +83,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       log.info('Naim Uniti platform didFinishLaunching');
-      
+
       const receivers = this.config.receivers;
-      
+
       // Remove all receivers that are not in the config file anymore
       this.accessories.forEach(accessory => {
         const needsRemoving = !receivers.some((receiver: { name:string; ip_address: string }) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
@@ -93,7 +93,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           this.removeAudioReceiverAccessory(accessory);
         }
       });
-      
+
       // Add all receivers that are in the config file but not registered
       receivers.forEach((receiver: { name:string; ip_address: string }) => {
         const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
@@ -134,11 +134,13 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       volume: 0,
     };
 
-    this.setServices(accessory);
+    this.setServices(accessory)
+      .then( () => {
+        //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
+        this.accessories.push(accessory);
+      });
 
-    //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-    this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
-    this.accessories.push(accessory);
   };
 
   removeAudioReceiverAccessory = (accessory: PlatformAccessory<context>) => {
@@ -148,7 +150,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.splice(0, 1, accessory);
   };
 
-  setServices = (accessory: PlatformAccessory<context>) => {
+  setServices = async (accessory: PlatformAccessory<context>) => {
     if (!accessory.context || !accessory.context.ip) {
       this.log.error('No IP Address configured on %s', accessory.displayName);
       return;
@@ -328,6 +330,11 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
+    
+    const serialNumber = await naimApiGet('/system', 'hardwareSerial');
+    if (serialNumber) {
+      informationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
+    }
     
     this.log.debug('Linking atomSpeakerService');
     atomService.addLinkedService(atomSpeakerService);
