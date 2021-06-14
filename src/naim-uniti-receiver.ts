@@ -79,6 +79,8 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       this.log.warn('Found device @%s (%s) on port %s of size %s', rinfo.address, rinfo.family, rinfo.port, rinfo.size);
     });
 
+    ssdp.search('ssdp:all');
+
     this.log.info('Naim Uniti Platform platform finished initializing!');
 
     /*
