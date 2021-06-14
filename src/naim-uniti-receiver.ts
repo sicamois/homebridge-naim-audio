@@ -126,6 +126,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 modelNumber: device.modelNumber[0],
                 serialNumber: device.manufacturerURL[0],
               });
+              this.log.warn('login receiver %s', this.receivers[this.receivers.length - 1]);
               this.log.warn('%o', this.receivers[this.receivers.length - 1]);
             }
           }
