@@ -115,8 +115,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
-            const manufacturer: string[] = device.manufacturer;
-            if (manufacturer && manufacturer[0].includes('Naim') ) {
+            const manufacturer: string = device.manufacturer[0];
+            if (manufacturer && manufacturer.includes('Naim') ) {
+              this.log.warn('Naim device found !');
               this.receivers.push({
                 name: device.friendlyName[0],
                 ip_address: rinfo.address,
@@ -126,8 +127,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 modelNumber: device.modelNumber[0],
                 serialNumber: device.manufacturerURL[0],
               });
-              this.log.warn('login receiver %s', this.receivers[this.receivers.length - 1]);
-              this.log.warn('%o', this.receivers[this.receivers.length - 1]);
+              const receiver = this.receivers[this.receivers.length - 1];
+              this.log.warn('login receiver %s', receiver);
+              this.log.warn('%o', receiver);
             }
           }
         } else {
