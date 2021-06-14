@@ -403,7 +403,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     const serialNumber = await naimApiGet('/system', 'hardwareSerial');
     if (serialNumber) {
-      this.log.debug('Setting serial number');
+      this.log.debug('Setting serial number %s', serialNumber);
       informationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
     }
 
