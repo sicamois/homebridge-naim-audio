@@ -18,7 +18,7 @@ import { Parser } from 'xml2js';
 import { RemoteInfo } from 'dgram';
 
 const PLUGIN_NAME = 'homebridge-naim-audio';
-const PLATFORM_NAME = 'NaimAudio';
+const PLATFORM_NAME = 'NaimAudioPlatform';
 const NAIM_API_PORT = 15081;
 
 let hap: HAP;
@@ -28,7 +28,7 @@ export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
 
-  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, NaimAudio);
+  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, NaimAudioPlatform);
 };
 
 type context = {
@@ -50,7 +50,7 @@ type receiver = {
   uuid?: string;
 };
 
-class NaimAudio implements DynamicPlatformPlugin {
+class NaimAudioPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
 
