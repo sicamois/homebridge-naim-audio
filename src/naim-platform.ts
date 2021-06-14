@@ -53,15 +53,13 @@ type receiver = {
 class NaimAudio implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
-  private readonly config: PlatformConfig;
 
   private readonly accessories: PlatformAccessory<context>[];
   private readonly receivers: receiver[];
 
-  constructor(log: Logging, config: PlatformConfig, api: API) {
+  constructor(log: Logging, _: PlatformConfig, api: API) {
     this.log = log;
     this.api = api;
-    this.config = config;
     this.accessories = [];
     this.receivers = [];
 
