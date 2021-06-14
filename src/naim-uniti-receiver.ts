@@ -116,28 +116,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const device: any = result.root.device;
           if (device) {
-            this.log.warn('Device : %o', device.manufacturer);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const manufacturerArray: any = device.manufacturer;
-            if (manufacturerArray) {
-              this.log.warn('Device : %s', device.manufacturer[0]);
-              const manufacturer: string = device.manufacturer[0];
-              this.log.warn('Found device from %s', manufacturer);
-              if (manufacturer.includes('Naim') ) {
-                this.log.warn('Naim device found !');
-                this.receivers.push({
-                  name: device.friendlyName[0],
-                  ip_address: rinfo.address,
-                  manufacturer: device.manufacturer[0],
-                  manufacturerURL: device.manufacturerURL[0],
-                  modelName: device.manufacturerURL[0],
-                  modelNumber: device.modelNumber[0],
-                  serialNumber: device.manufacturerURL[0],
-                });
-                const receiver = this.receivers[this.receivers.length - 1];
-                this.log.warn('login receiver %s', receiver);
-                this.log.warn('%o', receiver);
-              }
+            const manufacturer: string = device[0]?.manufacturer[0];
+            if (manufacturer && manufacturer.includes('Naim')) {
+              this.log.warn('Naim device found !');
+              this.receivers.push({
+                name: device.friendlyName[0],
+                ip_address: rinfo.address,
+                manufacturer: device.manufacturer[0],
+                manufacturerURL: device.manufacturerURL[0],
+                modelName: device.manufacturerURL[0],
+                modelNumber: device.modelNumber[0],
+                serialNumber: device.manufacturerURL[0],
+              });
+              const receiver = this.receivers[this.receivers.length - 1];
+              this.log.warn('login receiver %o', receiver);
             }
           } else {
             this.log.error(error);
