@@ -14,7 +14,7 @@ import {
 } from 'homebridge';
 import axios from 'axios';
 
-const PLUGIN_NAME = 'homebridge-naim-uniti-reveiver';
+const PLUGIN_NAME = 'homebridge-naim-uniti-receiver';
 const PLATFORM_NAME = 'NaimUnitiPlatform';
 const NAIM_API_PORT = 15081;
 
@@ -237,7 +237,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     atomService
       .getCharacteristic(hap.Characteristic.Active)
       .onGet(async () => {
-        this.log.debug('Get Active Init - context: %s', JSON.stringify(accessory.context));
         naimApiGet('/power', 'system')
           .then((returnedValue) => {
             const isActive = (returnedValue === 'on');
@@ -246,26 +245,18 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               isActive,
             );
             accessory.context.powerOn = isActive;
-            this.log.debug('Get Active async return - context: %s', JSON.stringify(accessory.context));
             return isActive;
           })
           .catch((error) => {
             handleError(error);
             return false;
           });
-        this.log.debug('Get Active immediate return - context: %s', JSON.stringify(accessory.context));
         return accessory.context.powerOn;
       })
       .onSet(async (value) => {
         const isActive = (value as boolean);
         accessory.context.powerOn = isActive;
         naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
-          // .then((_) => {
-          //   atomService.updateCharacteristic(
-          //     hap.Characteristic.Active,
-          //     isActive,
-          //   );
-          // })
           .catch((error) => {
             handleError(error);
           });
