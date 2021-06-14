@@ -336,7 +336,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         (receiver.context.currentMediaState === 0) ? 1 : 0;
       });
 
-    const atomSpeakerService = new hap.Service.Speaker(receiver.displayName + 'Service');
+    const atomSpeakerService = new hap.Service.SmartSpeaker(receiver.displayName + 'Service');
 
     atomSpeakerService
       .getCharacteristic(hap.Characteristic.Mute)
