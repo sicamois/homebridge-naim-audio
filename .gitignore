@@ -5,8 +5,9 @@ dist
 package-lock.json
 build-link.sh
 
-# Ignore Mac OS DS_Store
+# Others
 .DS_Store
+build-link.sh
 
 # ------------- Defaults ------------- #
 
