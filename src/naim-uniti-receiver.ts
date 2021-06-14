@@ -135,27 +135,11 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       volume: 0,
     };
 
-    // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
-    const speakerUuid = hap.uuid.generate('speaker'+name);
-    const speakerAccessory = new Accessory<context>(
-      name + 'Speaker',
-      speakerUuid,
-      hap.Categories.SPEAKER,
-    );
-
-    speakerAccessory.context = {
-      ip: ip,
-      powerOn: false,
-      currentMediaState: hap.Characteristic.CurrentMediaState.STOP,
-      mute: false,
-      volume: 0,
-    };
-
-    this.setServices(receiverAccessory, speakerAccessory)
+    this.setServices(receiverAccessory)
       .then( () => {
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory, speakerAccessory]);
-        this.accessories.push(receiverAccessory, speakerAccessory);
+        this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
+        this.accessories.push(receiverAccessory);
       });
 
   };
@@ -167,7 +151,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.splice(0, 1, accessory);
   };
 
-  setServices = async (receiver: PlatformAccessory<context>, speaker: PlatformAccessory<context>) => {
+  setServices = async (receiver: PlatformAccessory<context>) => {
     if (!receiver.context || !receiver.context.ip) {
       this.log.error('No IP Address configured on %s', receiver.displayName);
       return;
@@ -352,7 +336,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         (receiver.context.currentMediaState === 0) ? 1 : 0;
       });
 
-    const atomSpeakerService = new hap.Service.Speaker(speaker.displayName + 'Service');
+    const atomSpeakerService = new hap.Service.Speaker(receiver.displayName + 'Service');
 
     atomSpeakerService
       .getCharacteristic(hap.Characteristic.Mute)
@@ -364,21 +348,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Mute,
               isMuted,
             );
-            speaker.context.mute = isMuted;
+            receiver.context.mute = isMuted;
             return isMuted;
           })
           .catch((error) => {
             handleError(error);
-            return speaker.context.mute;
+            return receiver.context.mute;
           });
-        return speaker.context.mute;
+        return receiver.context.mute;
       })
       .onSet(async (value) => {
         naimApiPut('/levels/room', 'mute', value as string).catch((error) => {
           handleError(error);
-          speaker.context.mute = !speaker.context.mute;
+          receiver.context.mute = !receiver.context.mute;
         });
-        speaker.context.mute = !speaker.context.mute;
+        receiver.context.mute = !receiver.context.mute;
       });
 
     atomSpeakerService
@@ -390,22 +374,22 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             if (returnedValue) {
               volume = +returnedValue;
             }
-            speaker.context.volume = volume;
+            receiver.context.volume = volume;
             return volume;
           })
           .catch((error) => {
             handleError(error);
             return 0;
           });
-        return speaker.context.volume;
+        return receiver.context.volume;
       })
       .onSet(async (value) => {
-        const intialVolume = speaker.context.volume;
+        const intialVolume = receiver.context.volume;
         naimApiPut('/levels/room', 'volume', value as string).catch((error) => {
           handleError(error);
-          speaker.context.volume = intialVolume;
+          receiver.context.volume = intialVolume;
         });
-        speaker.context.volume = +value;
+        receiver.context.volume = +value;
       });
 
     this.log.debug('Adding informationService');
@@ -414,16 +398,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       receiverInformationService = receiver.addService(hap.Service.AccessoryInformation);
     }
 
-    let speakerInformationService = speaker.getService(hap.Service.AccessoryInformation);
-    if (!speakerInformationService) {
-      speakerInformationService = speaker.addService(hap.Service.AccessoryInformation);
-    }
-
     receiverInformationService
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
-      .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
-
-    speakerInformationService
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
 
@@ -431,14 +406,13 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     if (serialNumber) {
       this.log.debug('Setting serial number %s', serialNumber);
       receiverInformationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
-      speakerInformationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
     }
 
 
     this.log.debug('Adding atomService');
     receiver.addService(atomService);
     this.log.debug('Adding atomSpeakerService');
-    speaker.addService(atomSpeakerService);
+    receiver.addService(atomSpeakerService);
     this.log.debug('Finished adding services');
 
   };
