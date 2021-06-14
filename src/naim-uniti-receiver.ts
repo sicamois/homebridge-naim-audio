@@ -255,10 +255,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
           })
           .catch((error) => {
             handleError(error);
-            return null;
+            return accessory.context.currentMediaState;
           });
         // return as soon as possible, update on the resoution of the async function
-        return null;
+        return accessory.context.currentMediaState;
       })
       .onSet(async () => {
         naimApiPut('/nowplaying', 'cmd', 'playpause', true)
