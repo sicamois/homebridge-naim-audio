@@ -159,6 +159,76 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.log.debug('setServices');
     const baseURL = 'http://' + accessory.context.ip + ':' + NAIM_API_PORT;
 
+    // Utility functions
+    const naimApiGet = async (path: string, key: string) => {
+      const apiURL = baseURL + path;
+      this.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
+      try {
+        const response = await axios.get(apiURL);
+        return response.data[key] as string;
+      } catch (error) {
+        handleError(error, apiURL);
+      }
+    };
+
+    const naimApiPut = async (
+      path: string,
+      key: string,
+      valueToSet: string,
+      forceGet = false,
+    ) => {
+      const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
+      this.log.debug(
+        'naimApiCall - PUT ' +
+          (forceGet ? '(forced)' : '') +
+          ' : ' +
+          valueToSet +
+          ' into ' +
+          key +
+          '@' +
+          apiURL,
+      );
+      if (!forceGet) {
+        axios.put(apiURL).catch((error) => {
+          handleError(error, apiURL);
+        });
+      } else {
+        axios.get(apiURL).catch((error) => {
+          handleError(error, apiURL);
+        });
+      }
+    };
+
+    const handleError = (error: Error, url = 'N/A') => {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // client received an error response (5xx, 4xx)
+          this.log.error(
+            'Naim receiver emited a bad response (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        } else if (error.request) {
+          // client never received a response, or request never left
+          this.log.error(
+            'Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        } else {
+          // Not a network error
+          this.log.error(
+            'Other request error (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        }
+      } else {
+        // Not an error from the request
+        this.log.error('Problem (On : %s - Details : %s)', url, error.message);
+      }
+    };
+
     const atomService = new hap.Service.Television(
       accessory.displayName,
       'Naim Unity',
@@ -330,12 +400,12 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
       .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
       .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
-    
+
     const serialNumber = await naimApiGet('/system', 'hardwareSerial');
     if (serialNumber) {
       informationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
     }
-    
+
     this.log.debug('Linking atomSpeakerService');
     atomService.addLinkedService(atomSpeakerService);
     this.log.debug('Adding atomService');
@@ -344,75 +414,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     accessory.addService(informationService);
     this.log.debug('Finished adding services');
 
-    // Utility functions
-    const naimApiGet = async (path: string, key: string) => {
-      const apiURL = baseURL + path;
-      this.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
-      try {
-        const response = await axios.get(apiURL);
-        return response.data[key] as string;
-      } catch (error) {
-        handleError(error, apiURL);
-      }
-    };
-
-    const naimApiPut = async (
-      path: string,
-      key: string,
-      valueToSet: string,
-      forceGet = false,
-    ) => {
-      const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
-      this.log.debug(
-        'naimApiCall - PUT ' +
-          (forceGet ? '(forced)' : '') +
-          ' : ' +
-          valueToSet +
-          ' into ' +
-          key +
-          '@' +
-          apiURL,
-      );
-      if (!forceGet) {
-        axios.put(apiURL).catch((error) => {
-          handleError(error, apiURL);
-        });
-      } else {
-        axios.get(apiURL).catch((error) => {
-          handleError(error, apiURL);
-        });
-      }
-    };
-
-    const handleError = (error: Error, url = 'N/A') => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // client received an error response (5xx, 4xx)
-          this.log.error(
-            'Naim receiver emited a bad response (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        } else if (error.request) {
-          // client never received a response, or request never left
-          this.log.error(
-            'Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        } else {
-          // Not a network error
-          this.log.error(
-            'Other request error (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        }
-      } else {
-        // Not an error from the request
-        this.log.error('Problem (On : %s - Details : %s)', url, error.message);
-      }
-    };
   };
 
 }
