@@ -371,8 +371,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     receiverInformationService
       .setCharacteristic(hap.Characteristic.Manufacturer, receiver.manufacturer || 'Naim')
       .setCharacteristic(hap.Characteristic.Model, receiver.modelName || 'Uniti Atom')
-      .setCharacteristic(hap.Characteristic.SerialNumber, receiver.serialNumber || 'unknown')
-      .setCharacteristic(hap.Characteristic.Identifier, receiver.uuid || 'unknown');
+      .setCharacteristic(hap.Characteristic.SerialNumber, receiver.serialNumber || 'unknown');
 
     this.log.debug('Adding atomService');
     accessory.addService(atomService);
