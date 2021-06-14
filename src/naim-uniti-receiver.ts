@@ -13,8 +13,9 @@ import {
   Service,
 } from 'homebridge';
 import axios from 'axios';
-import { Client } from 'node-ssdp';
+import { Client, SsdpHeaders } from 'node-ssdp';
 import { Parser } from 'xml2js';
+import { RemoteInfo } from 'dgram';
 
 const PLUGIN_NAME = 'homebridge-naim-uniti-receiver';
 const PLATFORM_NAME = 'NaimUnitiPlatform';
@@ -116,57 +117,12 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
       // Find Naim receiver via ssdp
       const ssdp = new Client;
-      ssdp.on('response', async (headers, _, rinfo) => {
-        //this.log.warn('Found device \n%s\n%s', JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
-        const response = await axios({ responseType : 'text', url : headers.LOCATION });
-        const xmlParser = new Parser;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        xmlParser.parseString(response.data, (error: any, result: any) => {
-          if(error === null) {
-            //this.log.warn('Parse XML response : %o', result);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const device: any = result.root.device[0];
-            if (device) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const manufacturer: string = device.manufacturer[0];
-              if (manufacturer && manufacturer.includes('Naim')) {
-                this.log.info('Naim device found ! Name is %s', device.friendlyName[0]);
-                this.receivers.push({
-                  name: device.friendlyName[0],
-                  ip_address: rinfo.address,
-                  manufacturer: device.manufacturer[0],
-                  manufacturerURL: device.manufacturerURL[0],
-                  modelName: device.modelName[0],
-                  modelNumber: device.modelNumber[0],
-                  serialNumber: device.serialNumber[0],
-                  uuid: device.UDN[0],
-                });
-              }
-            } else {
-              this.log.error(error);
-            }
-          }
-        });
-
-        // Remove all receivers that are not in the config file anymore
-        // this.accessories.forEach(accessory => {
-        //   const needsRemoving = !this.receivers.some((receiver: receiver) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
-        //   if (needsRemoving) {
-        //     this.removeAudioReceiverAccessory(accessory);
-        //   }
-        // });
-
-        // Add all receivers that are in the config file but not registered
-        this.receivers.forEach((receiver: receiver) => {
-          const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
-          if(!isRegistered) {
-            this.addAudioReceiverAccessory(receiver);
-          }
-        });
+      ssdp.on('response', (headers: SsdpHeaders, statusCode: number, remoteInfos: RemoteInfo) => {
+        this.extractNaimReceiverFrom(headers, remoteInfos, this.addAudioReceiverAccessory);
       });
 
+      this.log.info('Start discovering Naim Audio devices');
       ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
-
     });
   }
 
@@ -181,7 +137,43 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
-  addAudioReceiverAccessory = (receiver: receiver) => {
+  // Custom methods
+
+  private readonly extractNaimReceiverFrom = async (headers: SsdpHeaders, remoteInfos: RemoteInfo, andProcessTheReceiver: (receiver: receiver) => void) => {
+    const xmlParser = new Parser;
+
+    const response = await axios({ responseType : 'text', url : headers.LOCATION });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    xmlParser.parseString(response.data, (error: any, result: any) => {
+      if(error === null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const device: any = result.root.device[0];
+        if (device) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const manufacturer: string = device.manufacturer[0];
+          if (manufacturer && manufacturer.includes('Naim')) {
+            const receiver = {
+              name: device.friendlyName[0],
+              ip_address: remoteInfos.address,
+              manufacturer: device.manufacturer[0],
+              manufacturerURL: device.manufacturerURL[0],
+              modelName: device.modelName[0],
+              modelNumber: device.modelNumber[0],
+              serialNumber: device.serialNumber[0],
+              uuid: device.UDN[0],
+            };
+            this.log.info('%s discovered ! It is a %s %s', receiver.name, receiver.manufacturer, receiver.modelName);
+            andProcessTheReceiver(receiver);
+          }
+        } else {
+          this.log.error(error);
+        }
+      }
+    });
+  };
+
+  private addAudioReceiverAccessory = (receiver: receiver) => {
     this.log.info('Adding new accessory with name %s', receiver.name);
 
     // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
@@ -202,6 +194,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
     this.setServices(receiverAccessory, receiver)
       .then( () => {
+        this.log.info('Finish adding accessory with name %s', receiver.name);
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
         this.accessories.push(receiverAccessory);
@@ -209,86 +202,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
   };
 
-  removeAudioReceiverAccessory = (accessory: PlatformAccessory<context>) => {
-    this.log.info('Removing accessory with name %s', accessory.displayName);
-
-    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-    this.accessories.splice(0, 1, accessory);
-  };
-
-  setServices = async (accessory: PlatformAccessory<context>, receiver: receiver) => {
+  private readonly setServices = async (accessory: PlatformAccessory<context>, receiver: receiver) => {
     this.log.debug('setServices');
     const baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
-
-    // Utility functions
-    const naimApiGet = async (path: string, key: string) => {
-      const apiURL = baseURL + path;
-      this.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
-      try {
-        const response = await axios.get(apiURL);
-        return response.data[key] as string;
-      } catch (error) {
-        handleError(error, apiURL);
-      }
-    };
-
-    const naimApiPut = async (
-      path: string,
-      key: string,
-      valueToSet: string,
-      forceGet = false,
-    ) => {
-      const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
-      this.log.debug(
-        'naimApiCall - PUT ' +
-          (forceGet ? '(forced)' : '') +
-          ' : ' +
-          valueToSet +
-          ' into ' +
-          key +
-          '@' +
-          apiURL,
-      );
-      if (!forceGet) {
-        axios.put(apiURL).catch((error) => {
-          handleError(error, apiURL);
-        });
-      } else {
-        axios.get(apiURL).catch((error) => {
-          handleError(error, apiURL);
-        });
-      }
-    };
-
-    const handleError = (error: Error, url = 'N/A') => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // client received an error response (5xx, 4xx)
-          this.log.error(
-            'Naim receiver emited a bad response (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        } else if (error.request) {
-          // client never received a response, or request never left
-          this.log.error(
-            'Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        } else {
-          // Not a network error
-          this.log.error(
-            'Other request error (On : %s - Details : %s)',
-            url,
-            error.message,
-          );
-        }
-      } else {
-        // Not an error from the request
-        this.log.error('Problem (On : %s - Details : %s)', url, error.message);
-      }
-    };
 
     const atomService = new hap.Service.Television(
       accessory.displayName,
@@ -396,8 +312,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         (accessory.context.currentMediaState === 0) ? 1 : 0;
       });
 
-    //const atomSpeakerService = new hap.Service.SmartSpeaker(receiver.displayName + 'Service');
-
     atomService
       .getCharacteristic(hap.Characteristic.Mute)
       .onGet(async () => {
@@ -460,12 +374,78 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       .setCharacteristic(hap.Characteristic.SerialNumber, receiver.serialNumber || 'unknown')
       .setCharacteristic(hap.Characteristic.Identifier, receiver.uuid || 'unknown');
 
-    // this.log.debug('Adding atomSpeakerService');
-    // receiver.addService(atomSpeakerService);
     this.log.debug('Adding atomService');
     accessory.addService(atomService);
     this.log.debug('Finished adding services');
 
-  };
+    // Utility functions
+    const naimApiGet = async (path: string, key: string) => {
+      const apiURL = baseURL + path;
+      this.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
+      try {
+        const response = await axios.get(apiURL);
+        return response.data[key] as string;
+      } catch (error) {
+        handleError(error, apiURL);
+      }
+    };
 
+    const naimApiPut = async (
+      path: string,
+      key: string,
+      valueToSet: string,
+      forceGet = false,
+    ) => {
+      const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
+      this.log.debug(
+        'naimApiCall - PUT ' +
+          (forceGet ? '(forced)' : '') +
+          ' : ' +
+          valueToSet +
+          ' into ' +
+          key +
+          '@' +
+          apiURL,
+      );
+      if (!forceGet) {
+        axios.put(apiURL).catch((error) => {
+          handleError(error, apiURL);
+        });
+      } else {
+        axios.get(apiURL).catch((error) => {
+          handleError(error, apiURL);
+        });
+      }
+    };
+
+    const handleError = (error: Error, url = 'N/A') => {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // client received an error response (5xx, 4xx)
+          this.log.error(
+            'Naim receiver emited a bad response (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        } else if (error.request) {
+          // client never received a response, or request never left
+          this.log.error(
+            'Naim receiver did not respond. Check the IP Address in your configuration of the plugin. (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        } else {
+          // Not a network error
+          this.log.error(
+            'Other request error (On : %s - Details : %s)',
+            url,
+            error.message,
+          );
+        }
+      } else {
+        // Not an error from the request
+        this.log.error('Problem (On : %s - Details : %s)', url, error.message);
+      }
+    };
+  };
 }

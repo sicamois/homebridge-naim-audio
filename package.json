@@ -1,7 +1,7 @@
 {
   "name": "homebridge-naim-uniti-receiver",
   "displayName": "Homebridge Naim Uniti Atom Receiver",
-  "version": "0.5",
+  "version": "0.6",
   "description": "Control your Naim Uniti Atom directly in the Apple Home App",
   "main": "dist/naim-uniti-receiver.js",
   "scripts": {
