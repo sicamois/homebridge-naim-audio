@@ -80,11 +80,13 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     ssdp.on('response', async (headers, statusCode, rinfo) => {
       //this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
       const response = await axios({ responseType : 'text', url : headers.LOCATION });
-      const xmlParser = new Parser({ attrkey: 'root' });
+      const xmlParser = new Parser;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       xmlParser.parseString(response.data, (error: any, result: any) => {
         if(error === null) {
-          this.log.warn(result);
+          if (result.root.device) {
+            this.log.warn(result.root.device);
+          }
         } else {
           this.log.error(error);
         }
