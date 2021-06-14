@@ -79,7 +79,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
       this.log.warn('Found device \n%d\n%s\n%s', statusCode, JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
     });
 
-    ssdp.search('ssdp:all');
+    ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
 
     this.log.info('Naim Uniti Platform platform finished initializing!');
 
