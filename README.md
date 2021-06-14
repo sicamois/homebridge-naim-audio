@@ -11,8 +11,8 @@ This plugin integrates the Naim Audio devices into Apple Home App.
 
 ## Features
 
-Power the amplifier On and Off
-Auto-discover all your connected Naim Audio devices
+- Power the amplifier On and Off
+- Auto-discover all your connected Naim Audio devices
 
 ## Configuration
 
