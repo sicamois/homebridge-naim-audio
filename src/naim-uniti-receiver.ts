@@ -14,7 +14,6 @@ import {
 } from 'homebridge';
 import axios from 'axios';
 import ssdp from 'node-upnp-ssdp';
-import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 const PLUGIN_NAME = 'homebridge-naim-uniti-receiver';
 const PLATFORM_NAME = 'NaimUnitiPlatform';
@@ -75,10 +74,10 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
 
 
     // probably parse config or something here
-    ssdp.on('DeviceFound', this.log);
-    ssdp.on('DeviceAvailable', this.log);
-    ssdp.on('DeviceUnavailable', this.log);
-    ssdp.on('DeviceUpdate', this.log);
+    ssdp.on('DeviceFound', this.log.warn);
+    ssdp.on('DeviceAvailable', this.log.warn);
+    ssdp.on('DeviceUnavailable', this.log.warn);
+    ssdp.on('DeviceUpdate', this.log.warn);
 
     ssdp.mSearch();
 
