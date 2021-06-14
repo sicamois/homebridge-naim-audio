@@ -260,12 +260,12 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         const isActive = (value as boolean);
         accessory.context.powerOn = isActive;
         naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
-          .then((_) => {
-            atomService.updateCharacteristic(
-              hap.Characteristic.Active,
-              isActive,
-            );
-          })
+          // .then((_) => {
+          //   atomService.updateCharacteristic(
+          //     hap.Characteristic.Active,
+          //     isActive,
+          //   );
+          // })
           .catch((error) => {
             handleError(error);
           });
