@@ -19,8 +19,10 @@ Power the amplifier On and Off
 Your config.json file must include the following for the plugin to be active.
 
 ```json
-"platforms": [{
-  "platform": "NaimAudioPlatform",
-  "name": "Naim Adio"
-}]
+"platforms": [
+  {
+    "platform": "NaimAudioPlatform",
+    "name": "Naim Adio"
+  }
+]
 ```
