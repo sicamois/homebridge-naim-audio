@@ -85,6 +85,7 @@ type receiver = {
   modelName?: string;
   modelNumber?: string;
   serialNumber?: string;
+  uuid?: string;
 };
 
 class NaimUnitiPlatform implements DynamicPlatformPlugin {
@@ -102,45 +103,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories = [];
     this.receivers = [];
 
-    // probably parse config or something here
-    // Find Naim receiver via ssdp
-    const ssdp = new Client;
-    ssdp.on('response', async (headers, _, rinfo) => {
-      //this.log.warn('Found device \n%s\n%s', JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
-      const response = await axios({ responseType : 'text', url : headers.LOCATION });
-      const xmlParser = new Parser;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      xmlParser.parseString(response.data, (error: any, result: any) => {
-        if(error === null) {
-          //this.log.warn('Parse XML response : %o', result);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const device: any = result.root.device[0];
-          if (device) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const manufacturer: string = device.manufacturer[0];
-            if (manufacturer && manufacturer.includes('Naim')) {
-              this.log.warn('Naim device found !');
-              this.receivers.push({
-                name: device.friendlyName[0],
-                ip_address: rinfo.address,
-                manufacturer: device.manufacturer[0],
-                manufacturerURL: device.manufacturerURL[0],
-                modelName: device.modelName[0],
-                modelNumber: device.modelNumber[0],
-                serialNumber: device.serialNumber[0],
-              });
-              const receiver = this.receivers[this.receivers.length - 1];
-              this.log.warn('login receiver %o', receiver);
-            }
-          } else {
-            this.log.error(error);
-          }
-        }
-      });
-    });
-
-    ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
-
     this.log.info('Naim Uniti Platform platform finished initializing!');
 
     /*
@@ -152,21 +114,56 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       log.info('Naim Uniti platform didFinishLaunching');
 
-      const receivers = this.config.receivers;
+      // Find Naim receiver via ssdp
+      const ssdp = new Client;
+      ssdp.on('response', async (headers, _, rinfo) => {
+        //this.log.warn('Found device \n%s\n%s', JSON.stringify(headers, null, '  '), JSON.stringify(rinfo, null, '  '));
+        const response = await axios({ responseType : 'text', url : headers.LOCATION });
+        const xmlParser = new Parser;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        xmlParser.parseString(response.data, (error: any, result: any) => {
+          if(error === null) {
+            //this.log.warn('Parse XML response : %o', result);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const device: any = result.root.device[0];
+            if (device) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const manufacturer: string = device.manufacturer[0];
+              if (manufacturer && manufacturer.includes('Naim')) {
+                this.log.info('Naim device found ! Name is %s', device.friendlyName[0]);
+                this.receivers.push({
+                  name: device.friendlyName[0],
+                  ip_address: rinfo.address,
+                  manufacturer: device.manufacturer[0],
+                  manufacturerURL: device.manufacturerURL[0],
+                  modelName: device.modelName[0],
+                  modelNumber: device.modelNumber[0],
+                  serialNumber: device.serialNumber[0],
+                  uuid: device.UDN[0],
+                });
+              }
+            } else {
+              this.log.error(error);
+            }
+          }
+        });
+      });
+
+      ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
 
       // Remove all receivers that are not in the config file anymore
       this.accessories.forEach(accessory => {
-        const needsRemoving = !receivers.some((receiver: { name:string; ip_address: string }) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
+        const needsRemoving = !this.receivers.some((receiver: receiver) => receiver.name === accessory.displayName && receiver.ip_address === accessory.context.ip);
         if (needsRemoving) {
           this.removeAudioReceiverAccessory(accessory);
         }
       });
 
       // Add all receivers that are in the config file but not registered
-      receivers.forEach((receiver: { name:string; ip_address: string }) => {
+      this.receivers.forEach((receiver: receiver) => {
         const isRegistered = this.accessories.some(accessory => accessory.displayName === receiver.name);
         if(!isRegistered) {
-          this.addAudioReceiverAccessory(receiver.name, receiver.ip_address);
+          this.addAudioReceiverAccessory(receiver);
         }
       });
     });
@@ -183,26 +180,26 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
-  addAudioReceiverAccessory = (name: string, ip: string) => {
-    this.log.info('Adding new accessory with name %s', name);
+  addAudioReceiverAccessory = (receiver: receiver) => {
+    this.log.info('Adding new accessory with name %s', receiver.name);
 
     // uuid must be generated from a unique but not changing data source, name should not be used in the most cases. But works in this specific example.
-    const receiverUuid = hap.uuid.generate('receiver'+name);
+    const receiverUuid = hap.uuid.generate(receiver.name);
     const receiverAccessory = new Accessory<context>(
-      name,
+      receiver.name,
       receiverUuid,
       hap.Categories.AUDIO_RECEIVER,
     );
 
     receiverAccessory.context = {
-      ip: ip,
+      ip: receiver.name,
       powerOn: false,
       currentMediaState: hap.Characteristic.CurrentMediaState.STOP,
       mute: false,
       volume: 0,
     };
 
-    this.setServices(receiverAccessory)
+    this.setServices(receiverAccessory, receiver)
       .then( () => {
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
@@ -218,14 +215,9 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     this.accessories.splice(0, 1, accessory);
   };
 
-  setServices = async (receiver: PlatformAccessory<context>) => {
-    if (!receiver.context || !receiver.context.ip) {
-      this.log.error('No IP Address configured on %s', receiver.displayName);
-      return;
-    }
-
+  setServices = async (accessory: PlatformAccessory<context>, receiver: receiver) => {
     this.log.debug('setServices');
-    const baseURL = 'http://' + receiver.context.ip + ':' + NAIM_API_PORT;
+    const baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
 
     // Utility functions
     const naimApiGet = async (path: string, key: string) => {
@@ -298,7 +290,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     };
 
     const atomService = new hap.Service.Television(
-      receiver.displayName,
+      accessory.displayName,
       'Naim Unity',
     );
     atomService
@@ -311,18 +303,18 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.Active,
               isActive,
             );
-            receiver.context.powerOn = isActive;
+            accessory.context.powerOn = isActive;
             return isActive;
           })
           .catch((error) => {
             handleError(error);
             return false;
           });
-        return receiver.context.powerOn;
+        return accessory.context.powerOn;
       })
       .onSet(async (value) => {
         const isActive = (value as boolean);
-        receiver.context.powerOn = isActive;
+        accessory.context.powerOn = isActive;
         naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
           .catch((error) => {
             handleError(error);
@@ -332,7 +324,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     atomService.setCharacteristic(hap.Characteristic.ActiveIdentifier, 1);
     atomService.setCharacteristic(
       hap.Characteristic.ConfiguredName,
-      receiver.displayName,
+      accessory.displayName,
     );
 
     atomService
@@ -352,7 +344,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
                 mediaState = hap.Characteristic.CurrentMediaState.STOP;
                 break;
             }
-            receiver.context.currentMediaState = mediaState;
+            accessory.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
@@ -360,7 +352,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             return hap.Characteristic.CurrentMediaState.STOP;
           });
         // return as soon as possible, update on the resoution of the async function
-        return receiver.context.currentMediaState;
+        return accessory.context.currentMediaState;
       });
 
     atomService
@@ -384,23 +376,23 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               hap.Characteristic.CurrentMediaState,
               mediaState,
             );
-            receiver.context.currentMediaState = mediaState;
+            accessory.context.currentMediaState = mediaState;
             return mediaState;
           })
           .catch((error) => {
             handleError(error);
-            return receiver.context.currentMediaState;
+            return accessory.context.currentMediaState;
           });
         // return as soon as possible, update on the resoution of the async function
-        return receiver.context.currentMediaState;
+        return accessory.context.currentMediaState;
       })
       .onSet(async () => {
         naimApiPut('/nowplaying', 'cmd', 'playpause', true)
           .catch((error) => {
             handleError(error);
-            (receiver.context.currentMediaState === 0) ? 1 : 0;
+            (accessory.context.currentMediaState === 0) ? 1 : 0;
           });
-        (receiver.context.currentMediaState === 0) ? 1 : 0;
+        (accessory.context.currentMediaState === 0) ? 1 : 0;
       });
 
     //const atomSpeakerService = new hap.Service.SmartSpeaker(receiver.displayName + 'Service');
@@ -411,21 +403,21 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         naimApiGet('/levels/room', 'mute')
           .then((returnedValue) => {
             const isMuted = returnedValue === '1';
-            receiver.context.mute = isMuted;
+            accessory.context.mute = isMuted;
             return isMuted;
           })
           .catch((error) => {
             handleError(error);
-            return receiver.context.mute;
+            return accessory.context.mute;
           });
-        return receiver.context.mute;
+        return accessory.context.mute;
       })
       .onSet(async (value) => {
         naimApiPut('/levels/room', 'mute', value as string).catch((error) => {
           handleError(error);
-          receiver.context.mute = !receiver.context.mute;
+          accessory.context.mute = !accessory.context.mute;
         });
-        receiver.context.mute = !receiver.context.mute;
+        accessory.context.mute = !accessory.context.mute;
       });
 
     atomService
@@ -437,45 +429,40 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
             if (returnedValue) {
               volume = +returnedValue;
             }
-            receiver.context.volume = volume;
+            accessory.context.volume = volume;
             return volume;
           })
           .catch((error) => {
             handleError(error);
             return 0;
           });
-        return receiver.context.volume;
+        return accessory.context.volume;
       })
       .onSet(async (value) => {
-        const intialVolume = receiver.context.volume;
+        const intialVolume = accessory.context.volume;
         naimApiPut('/levels/room', 'volume', value as string).catch((error) => {
           handleError(error);
-          receiver.context.volume = intialVolume;
+          accessory.context.volume = intialVolume;
         });
-        receiver.context.volume = +value;
+        accessory.context.volume = +value;
       });
 
     this.log.debug('Adding informationService');
-    let receiverInformationService = receiver.getService(hap.Service.AccessoryInformation);
+    let receiverInformationService = accessory.getService(hap.Service.AccessoryInformation);
     if (!receiverInformationService) {
-      receiverInformationService = receiver.addService(hap.Service.AccessoryInformation);
+      receiverInformationService = accessory.addService(hap.Service.AccessoryInformation);
     }
 
     receiverInformationService
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'Naim')
-      .setCharacteristic(hap.Characteristic.Model, 'Uniti Atom');
-
-    const serialNumber = await naimApiGet('/system', 'hardwareSerial');
-    if (serialNumber) {
-      this.log.debug('Setting serial number %s', serialNumber);
-      receiverInformationService.setCharacteristic(hap.Characteristic.SerialNumber, serialNumber);
-    }
-
+      .setCharacteristic(hap.Characteristic.Manufacturer, receiver.manufacturer || 'Naim')
+      .setCharacteristic(hap.Characteristic.Model, receiver.modelName || 'Uniti Atom')
+      .setCharacteristic(hap.Characteristic.SerialNumber, receiver.serialNumber || 'unknown')
+      .setCharacteristic(hap.Characteristic.Identifier, receiver.uuid || 'unknown');
 
     // this.log.debug('Adding atomSpeakerService');
     // receiver.addService(atomSpeakerService);
     this.log.debug('Adding atomService');
-    receiver.addService(atomService);
+    accessory.addService(atomService);
     this.log.debug('Finished adding services');
 
   };
