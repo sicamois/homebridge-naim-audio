@@ -3,7 +3,7 @@
   "displayName": "Homebridge Naim Audio",
   "version": "0.8",
   "description": "Control your Naim Audio receivers directly in the Apple Home App",
-  "main": "dist/naim-uniti-receiver.js",
+  "main": "dist/naim-platform.js",
   "scripts": {
     "clean": "rimraf ./dist",
     "postpublish": "npm run clean",
