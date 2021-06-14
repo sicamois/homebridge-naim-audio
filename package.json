@@ -41,6 +41,7 @@
     "axios": "^0.21.1",
     "eslint": "^7.28.0",
     "homebridge": "^1.3.4",
+    "node-upnp-ssdp": "^0.1.1",
     "nodemon": "^2.0.7",
     "rimraf": "^3.0.2",
     "typescript": "^4.3.2"
