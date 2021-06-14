@@ -237,6 +237,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     atomService
       .getCharacteristic(hap.Characteristic.Active)
       .onGet(async () => {
+        this.log.debug('Get Active Init - context: %s', JSON.stringify(accessory.context));
         naimApiGet('/power', 'system')
           .then((returnedValue) => {
             const isActive = returnedValue === 'on';
@@ -245,12 +246,14 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
               isActive,
             );
             accessory.context.powerOn = isActive;
+            this.log.debug('Get Active async return - context: %s', JSON.stringify(accessory.context));
             return isActive;
           })
           .catch((error) => {
             handleError(error);
             return false;
           });
+        this.log.debug('Get Active immediate return - context: %s', JSON.stringify(accessory.context));
         return !accessory.context.powerOn;
       })
       .onSet(async (value) => {
@@ -398,7 +401,7 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
         accessory.context.volume = +value;
       });
 
-    //const informationService = new hap.Service.AccessoryInformation(accessory.displayName, 'Infos')
+    this.log.debug('Adding informationService');
     let informationService = accessory.getService(hap.Service.AccessoryInformation);
     if (!informationService) {
       informationService = accessory.addService(hap.Service.AccessoryInformation);
@@ -418,8 +421,6 @@ class NaimUnitiPlatform implements DynamicPlatformPlugin {
     atomService.addLinkedService(atomSpeakerService);
     this.log.debug('Adding atomService');
     accessory.addService(atomService);
-    this.log.debug('Adding informationService');
-    //accessory.addService(informationService);
     this.log.debug('Finished adding services');
 
   };
