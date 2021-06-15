@@ -142,7 +142,7 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       if (error === null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const device: any = result.root.device[0];
-        this.log.debug('New device found !\n   name: %s\n    manufacturer: %s\n    model: %s\n   IP Address: %s\n   uPnp type: %s',
+        this.log.debug('New device found !\n   name: %s\n   manufacturer: %s\n   model: %s\n   IP Address: %s\n   uPnp type: %s',
           device.friendlyName[0],
           device.manufacturer[0],
           device.modelName[0],
