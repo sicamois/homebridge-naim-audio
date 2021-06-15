@@ -22,7 +22,7 @@
     "curly": ["warn", "all"],
     "brace-style": ["warn"],
     "prefer-arrow-callback": ["warn"],
-    "max-len": ["warn", 200],
+    "max-len": ["warn", 140],
     "no-console": ["warn"], // use the provided Homebridge log method instead
     "no-non-null-assertion": ["off"],
     "comma-spacing": ["error"],
@@ -33,7 +33,6 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/semi": ["warn"],
-    "@typescript-eslint/member-delimiter-style": ["warn"],
-    "@typescript-eslint/no-unused-vars": ["off"]
+    "@typescript-eslint/member-delimiter-style": ["warn"]
   }
 }
