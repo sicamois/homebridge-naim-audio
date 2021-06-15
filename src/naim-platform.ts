@@ -148,6 +148,7 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       if (error === null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const device: any = result.root.device[0];
+        this.log.warn('Device: %o', device);
         if (device) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const manufacturer: string = device.manufacturer[0];
