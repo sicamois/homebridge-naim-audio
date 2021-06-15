@@ -1,7 +1,7 @@
 {
   "name": "homebridge-naim-audio",
   "displayName": "Homebridge Naim Audio",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Control your Naim Audio receivers directly in the Apple Home App",
   "main": "dist/naim-platform.js",
   "scripts": {
