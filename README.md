@@ -13,6 +13,10 @@
 
 This plugin integrates the Naim Audio devices into Apple Home App.
 
+Only Uniti devices (Atom, Star and Nova) are supported.
+
+Mu-so devices are not supported.
+
 ## Features
 
 - Power the amplifier On and Off
@@ -43,3 +47,5 @@ This plugin uses third-aprties libraries :
 - [axios](https://github.com/axios/axios) developed by [axios](https://axios-http.com)
 - [node-ssdp](https://github.com/diversario/node-ssdp) developed by Ilya Shaisultanov ([diversario](https://github.com/diversario))
 - [node-xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) developed by Marek Kubica ([Leonidas-from-XIV](https://github.com/Leonidas-from-XIV))
+
+A warm thanks to [m0kum](https://github.com/m0kum) for debugging.
