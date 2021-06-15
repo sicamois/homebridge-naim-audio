@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "Naim Audio",
   "name": "homebridge-naim-audio",
   "version": "1.0.7",
