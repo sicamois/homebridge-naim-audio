@@ -12,6 +12,12 @@
           "type": "string",
           "required": true,
           "default": "Naim Audio"
+        },
+        "port": {
+          "title": "Name",
+          "type": "string",
+          "required": true,
+          "default": "15081"
         }
       }
     }

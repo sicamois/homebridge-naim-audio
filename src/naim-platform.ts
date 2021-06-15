@@ -53,13 +53,15 @@ type receiver = {
 class NaimAudioPlatform implements DynamicPlatformPlugin {
   private readonly log: Logging;
   private readonly api: API;
+  private readonly config: PlatformConfig;
 
   private readonly accessories: PlatformAccessory<context>[];
   private readonly receivers: receiver[];
 
-  constructor(log: Logging, _: PlatformConfig, api: API) {
+  constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
     this.api = api;
+    this.config = config;
     this.accessories = [];
     this.receivers = [];
 
@@ -142,13 +144,6 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       if (error === null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const device: any = result.root.device[0];
-        this.log.debug('New device found !\n   name: %s\n   manufacturer: %s\n   model: %s\n   IP Address: %s\n   uPnp type: %s',
-          device.friendlyName[0],
-          device.manufacturer[0],
-          device.modelName[0],
-          remoteInfos.address,
-          device.deviceType[0],
-        );
         if (device) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const manufacturer: string = device.manufacturer[0];
@@ -163,6 +158,13 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
               serialNumber: device.serialNumber[0],
               uuid: device.UDN[0],
             };
+            this.log.debug('New device found !\n   name: %s\n   manufacturer: %s\n   model: %s\n   IP Address: %s\n   uPnp type: %s',
+              receiver.name,
+              receiver.manufacturer,
+              receiver.modelName,
+              receiver.ip_address,
+              device.deviceType[0],
+            );
             if (this.receivers.find(existingReceiver => existingReceiver.name === receiver.name)) {
               this.log.info(
                 '%s discovered ! Already configured -> skipping',
@@ -219,7 +221,8 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
     receiver: receiver,
   ) => {
     this.log.debug('setServices');
-    const baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
+    //const baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
+    const baseURL = 'http://' + receiver.ip_address + ':' + this.config.port;
 
     const atomService = new hap.Service.Television(
       accessory.displayName,
