@@ -2,7 +2,7 @@
   "private": true,
   "displayName": "Naim Audio",
   "name": "homebridge-naim-audio",
-  "version": "0.1.0",
+  "version": "1.0.7-beta.2",
   "description": "Control your Naim Audio receivers directly in the Apple Home App",
   "license": "Apache-2.0",
   "repository": {
