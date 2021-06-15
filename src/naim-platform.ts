@@ -74,8 +74,8 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       const durationBeforeFallBack = 10000;
       this.discoverDevices(
-        //'urn:schemas-upnp-org:device:MediaRenderer:2',
-        'ssdp:all',
+        'urn:schemas-upnp-org:device:MediaRenderer:2',
+        //'ssdp:all',
         durationBeforeFallBack,
       );
       setTimeout(() => {
@@ -152,7 +152,6 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const manufacturer: string = device.manufacturer[0];
           if (manufacturer && manufacturer.includes('Naim')) {
-            this.log.warn('Naim Device of uPNP type: %o', device.deviceType[0]);
             const receiver = {
               name: device.friendlyName[0],
               ip_address: remoteInfos.address,
@@ -163,7 +162,6 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
               serialNumber: device.serialNumber[0],
               uuid: device.UDN[0],
             };
-            this.log.warn('Naim Device info : %o', receiver);
             if (this.receivers.find(existingReceiver => existingReceiver.name === receiver.name)) {
               this.log.info(
                 '%s discovered ! Already configures -> skipping',
