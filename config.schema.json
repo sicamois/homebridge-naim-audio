@@ -1,5 +1,8 @@
 {
     "pluginAlias": "NaimAudioPlatform",
     "pluginType": "platform",
-    "name": "Naim Audio"
+    "name": "Naim Audio",
+    "singular": true,
+    "headerDisplay": "Just save the config as it is by clicking the Save button in the bottom right corner",
+    "footerDisplay": "https://github.com/sicamois/homebridge-naim-audio"
 }
