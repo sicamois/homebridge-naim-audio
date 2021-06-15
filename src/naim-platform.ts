@@ -164,6 +164,16 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
               uuid: device.UDN[0],
             };
             this.log.warn('Naim Device info : %o', receiver);
+            if (this.receivers.find(existingReceiver => existingReceiver.name === receiver.name)) {
+              this.log.info(
+                '%s discovered ! Already configures -> skipping',
+                receiver.name,
+                receiver.manufacturer,
+                receiver.modelName,
+              );
+              return;
+            }
+
             this.log.info(
               '%s discovered ! It is a %s %s',
               receiver.name,
