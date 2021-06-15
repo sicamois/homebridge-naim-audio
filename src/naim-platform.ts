@@ -168,8 +168,6 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
               this.log.info(
                 '%s discovered ! Already configures -> skipping',
                 receiver.name,
-                receiver.manufacturer,
-                receiver.modelName,
               );
               return;
             }
