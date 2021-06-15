@@ -78,12 +78,6 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
         //'ssdp:all',
         durationBeforeFallBack,
       );
-      setTimeout(() => {
-        this.discoverDevices(
-          'ssdp:all',
-          30000,
-        );
-      }, durationBeforeFallBack);
     });
   }
 
