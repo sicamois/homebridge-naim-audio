@@ -74,8 +74,8 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       const durationBeforeFallBack = 10000;
       this.discoverDevices(
-        'urn:schemas-upnp-org:device:MediaRenderer:2',
-        //'ssdp:all',
+        //'urn:schemas-upnp-org:device:MediaRenderer:2',
+        'ssdp:all',
         durationBeforeFallBack,
       );
     });
