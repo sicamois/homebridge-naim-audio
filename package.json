@@ -34,7 +34,7 @@
     "url": "https://github.com/sicamois/homebridge-naim-audio"
   },
   "bugs": {
-    "url": "https://github.com/sicamois/homebridge-naim-audio/issues"
+    "url": "https://github.com/sicamois/homebridge-naim-audio"
   },
   "devDependencies": {
     "@types/node": "15.12.2",

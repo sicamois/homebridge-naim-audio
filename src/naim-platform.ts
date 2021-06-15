@@ -72,27 +72,17 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
      * This event can also be used to start discovery of new accessories.
      */
     api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
-
-      // Find Naim receiver via ssdp
-      const ssdp = new Client;
-      ssdp.on('response', (headers: SsdpHeaders, statusCode: number, remoteInfos: RemoteInfo) => {
-        this.extractNaimReceiverFrom(headers, remoteInfos, this.addAudioReceiverAccessory);
-      });
-
-      this.log.info('Start discovering Naim Audio devices with uPnP');
-      try {
-        ssdp.search('urn:schemas-upnp-org:device:MediaRenderer:2');
-
-        // Force ssdp discovery to stop after 10 secondes
-        setTimeout( () => {
-          ssdp.stop();
-          if (this.receivers.length === 0) {
-            this.log.warn('No Naim Audio device found on your network!');
-          }
-        }, 10000);
-      } catch (error) {
-        this.log.error('An error occured during discovering : %s', error.message);
-      }
+      const durationBeforeFallBack = 10000;
+      this.discoverDevices(
+        'urn:schemas-upnp-org:device:MediaRenderer:2',
+        durationBeforeFallBack,
+      );
+      setTimeout(() => {
+        this.discoverDevices(
+          'ssdp:all',
+          30000,
+        );
+      }, durationBeforeFallBack);
     });
   }
 
@@ -108,15 +98,53 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
   }
 
   // Custom methods
+  private readonly discoverDevices = (
+    uPnpType: string,
+    durationInMs: number,
+  ) => {
+    // Find Naim receiver via ssdp
+    const ssdp = new Client();
+    ssdp.on(
+      'response',
+      (headers: SsdpHeaders, statusCode: number, remoteInfos: RemoteInfo) => {
+        this.extractNaimReceiverFrom(
+          headers,
+          remoteInfos,
+          this.addAudioReceiverAccessory,
+        );
+      });
 
-  private readonly extractNaimReceiverFrom = async (headers: SsdpHeaders, remoteInfos: RemoteInfo, andProcessTheReceiver: (receiver: receiver) => void) => {
-    const xmlParser = new Parser;
+    this.log.info('Start discovering Naim Audio devices with uPnP');
+    try {
+      ssdp.search(uPnpType);
 
-    const response = await axios({ responseType : 'text', url : headers.LOCATION });
+      // Force ssdp discovery to stop after 10 secondes
+      setTimeout(() => {
+        ssdp.stop();
+        if (this.receivers.length === 0) {
+          this.log.warn('No Naim Audio device found on your network!');
+        }
+      }, durationInMs);
+    } catch (error) {
+      this.log.error('An error occured during discovering : %s', error.message);
+    }
+  };
+
+  private readonly extractNaimReceiverFrom = async (
+    headers: SsdpHeaders,
+    remoteInfos: RemoteInfo,
+    andProcessTheReceiver: (receiver: receiver) => void,
+  ) => {
+    const xmlParser = new Parser();
+
+    const response = await axios({
+      responseType: 'text',
+      url: headers.LOCATION,
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     xmlParser.parseString(response.data, (error: any, result: any) => {
-      if(error === null) {
+      if (error === null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const device: any = result.root.device[0];
         if (device) {
@@ -133,7 +161,12 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
               serialNumber: device.serialNumber[0],
               uuid: device.UDN[0],
             };
-            this.log.info('%s discovered ! It is a %s %s', receiver.name, receiver.manufacturer, receiver.modelName);
+            this.log.info(
+              '%s discovered ! It is a %s %s',
+              receiver.name,
+              receiver.manufacturer,
+              receiver.modelName,
+            );
             this.receivers.push(receiver);
             andProcessTheReceiver(receiver);
           }
@@ -163,16 +196,18 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       volume: 0,
     };
 
-    this.setServices(receiverAccessory, receiver)
-      .then( () => {
-        this.log.info('Accessory %s fully configured !', receiver.name);
-        //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
-        this.accessories.push(receiverAccessory);
-      });
+    this.setServices(receiverAccessory, receiver).then(() => {
+      this.log.info('Accessory %s fully configured !', receiver.name);
+      //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory]);
+      this.accessories.push(receiverAccessory);
+    });
   };
 
-  private readonly setServices = async (accessory: PlatformAccessory<context>, receiver: receiver) => {
+  private readonly setServices = async (
+    accessory: PlatformAccessory<context>,
+    receiver: receiver,
+  ) => {
     this.log.debug('setServices');
     const baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
 
@@ -185,7 +220,7 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       .onGet(async () => {
         naimApiGet('/power', 'system')
           .then((returnedValue) => {
-            const isActive = (returnedValue === 'on');
+            const isActive = returnedValue === 'on';
             atomService.updateCharacteristic(
               hap.Characteristic.Active,
               isActive,
@@ -200,10 +235,10 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
         return accessory.context.powerOn;
       })
       .onSet(async (value) => {
-        const isActive = (value as boolean);
+        const isActive = value as boolean;
         accessory.context.powerOn = isActive;
-        naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
-          .catch((error) => {
+        naimApiPut('/power', 'system', isActive ? 'on' : 'lona').catch(
+          (error) => {
             handleError(error);
           });
       });
@@ -274,17 +309,14 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
         return accessory.context.currentMediaState;
       })
       .onSet(async () => {
-        naimApiPut('/nowplaying', 'cmd', 'playpause', true)
-          .catch((error) => {
-            handleError(error);
-            (accessory.context.currentMediaState === 0) ? 1 : 0;
-          });
-        (accessory.context.currentMediaState === 0) ? 1 : 0;
+        naimApiPut('/nowplaying', 'cmd', 'playpause', true).catch((error) => {
+          handleError(error);
+          accessory.context.currentMediaState === 0 ? 1 : 0;
+        });
+        accessory.context.currentMediaState === 0 ? 1 : 0;
       });
 
-    const atomSpeakerService = new hap.Service.TelevisionSpeaker(
-      accessory.displayName + 'Speakers',
-    );
+    const atomSpeakerService = new hap.Service.TelevisionSpeaker(accessory.displayName + 'Speakers');
 
     atomSpeakerService
       .getCharacteristic(hap.Characteristic.Mute)
@@ -337,15 +369,24 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       });
 
     this.log.debug('Adding informationService');
-    let receiverInformationService = accessory.getService(hap.Service.AccessoryInformation);
+    let receiverInformationService = accessory.getService( hap.Service.AccessoryInformation);
     if (!receiverInformationService) {
       receiverInformationService = accessory.addService(hap.Service.AccessoryInformation);
     }
 
     receiverInformationService
-      .setCharacteristic(hap.Characteristic.Manufacturer, receiver.manufacturer || 'Naim')
-      .setCharacteristic(hap.Characteristic.Model, receiver.modelName || 'Uniti Atom')
-      .setCharacteristic(hap.Characteristic.SerialNumber, receiver.serialNumber || 'unknown');
+      .setCharacteristic(
+        hap.Characteristic.Manufacturer,
+        receiver.manufacturer || 'Naim',
+      )
+      .setCharacteristic(
+        hap.Characteristic.Model,
+        receiver.modelName || 'Uniti Atom',
+      )
+      .setCharacteristic(
+        hap.Characteristic.SerialNumber,
+        receiver.serialNumber || 'unknown',
+      );
 
     this.log.debug('Adding atomService');
     accessory.addService(atomService);
@@ -374,14 +415,7 @@ class NaimAudioPlatform implements DynamicPlatformPlugin {
       const apiURL = baseURL + path + '?' + key + '=' + valueToSet;
       this.log.debug(
         'naimApiCall - PUT ' +
-          (forceGet ? '(forced)' : '') +
-          ' : ' +
-          valueToSet +
-          ' into ' +
-          key +
-          '@' +
-          apiURL,
-      );
+          (forceGet ? '(forced)' : '') + ' : ' + valueToSet + ' into ' + key + '@' + apiURL);
       if (!forceGet) {
         axios.put(apiURL).catch((error) => {
           handleError(error, apiURL);
