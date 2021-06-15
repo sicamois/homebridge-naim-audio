@@ -53,7 +53,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
     this.api.on('didFinishLaunching', () => {
       log.debug('Executed didFinishLaunching callback');
       // run the method to discover / register your devices as accessories
-      this.discoverDevices('ssdp:all', 10000);
+      this.discoverDevices('urn:schemas-upnp-org:device:MediaRenderer:2', 10000);
     });
   }
 
