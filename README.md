@@ -20,6 +20,7 @@ Mu-so devices are not supported.
 ## Features
 
 - Power the amplifier On and Off
+- Play/pause current track
 - Auto-discover all your connected Naim Audio devices
 
 ## Configuration
