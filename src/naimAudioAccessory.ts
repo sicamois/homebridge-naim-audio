@@ -191,6 +191,7 @@ export class NaimAudioAccessory {
           this.receiverStates.mute = false;
           this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, false);
         });
+    this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
   };
 
   private getMute = async () => {
