@@ -191,10 +191,11 @@ export class NaimAudioAccessory {
     this.platform.log.warn('inputNames: %s', inputNames);
 
     const services = fromAccessory.services;
-    // eslint-disable-next-line brace-style
-    const inputServices = services.filter(service => { !nonInputServices.includes(service); });
-    // eslint-disable-next-line brace-style
-    const inputServicesToRemove = inputServices.filter(inputService => { !inputNames.includes(inputService.displayName); });
+    const inputServices = services.filter(service => !nonInputServices.includes(service));
+    const inputServicesNames = inputServices.map(inputService => inputService.displayName);
+    this.platform.log.warn('inputServicesNames: %s', inputServicesNames);
+
+    const inputServicesToRemove = inputServices.filter(inputService => !inputNames.includes(inputService.displayName));
     this.platform.log.warn('inputServicesToRemove: %s', inputServicesToRemove);
 
     inputServicesToRemove.forEach(service => {
