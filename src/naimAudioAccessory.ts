@@ -79,11 +79,11 @@ export class NaimAudioAccessory {
 
     // register handlers for the On/Off Characteristic
     this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
-      .onGet(this.getTargetMediaState.bind(this));
+      .onGet(this.getCurrentMediaState.bind(this));
 
     this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.TargetMediaState)
       .onSet(this.setTargetMediaState.bind(this))
-      .onGet(this.getTargetMediaState.bind(this));
+      .onGet(this.getCurrentMediaState.bind(this));
 
     this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)
       .onSet(this.setVolume.bind(this))
@@ -149,7 +149,6 @@ export class NaimAudioAccessory {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private setTargetMediaState = async (value: CharacteristicValue) => {
-    //this.receiverStates.currentMediaState === 0 ? 1 : 0;
     if (this.receiverStates.currentMediaState === 0) {
       this.receiverStates.currentMediaState = 1;
     } else {
@@ -166,7 +165,7 @@ export class NaimAudioAccessory {
     );
   };
 
-  private getTargetMediaState = async () => {
+  private getCurrentMediaState = async () => {
     let mediaState = this.receiverStates.currentMediaState;
     this.naimApiGet('/nowplaying', 'transportState')
       .then((returnedValue) => {
@@ -181,6 +180,7 @@ export class NaimAudioAccessory {
             mediaState = this.platform.Characteristic.CurrentMediaState.STOP;
             break;
         }
+        this.platform.log.debug('get getTargetMediaState returned with %s | updating mediaState to %s', returnedValue, mediaState);
         this.receiverStates.currentMediaState = mediaState;
         this.smartSpeakerService.updateCharacteristic(
           this.platform.Characteristic.CurrentMediaState,
