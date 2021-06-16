@@ -178,7 +178,7 @@ export class NaimAudioAccessory {
   };
 
   private setMute = async (value: CharacteristicValue) => {
-    this.platform.log
+    this.platform.log.debug('setMute with value : %s', value);
     const isMuted = value as boolean;
     this.receiverStates.mute = isMuted;
     this.naimApiPut('/levels/room', 'mute', value as string)
