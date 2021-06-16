@@ -173,6 +173,7 @@ export class NaimAudioAccessory {
           case '2':
             mediaState = this.platform.Characteristic.CurrentMediaState.PLAY;
             break;
+          case '1':
           case '3':
             mediaState = this.platform.Characteristic.CurrentMediaState.PAUSE;
             break;
