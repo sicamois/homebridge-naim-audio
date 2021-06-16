@@ -67,6 +67,8 @@ export class NaimAudioAccessory {
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
 
+    this.getInputs();
+
     // add a smart speaker service to handle play/pause
 
     // const speakerName = this.accessory.context.receiver.name + ' Speakers';
