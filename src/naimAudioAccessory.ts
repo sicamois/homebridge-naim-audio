@@ -139,9 +139,13 @@ export class NaimAudioAccessory {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private setTargetMediaState = async (_: CharacteristicValue) => {
+  private setTargetMediaState = async (value: CharacteristicValue) => {
+    this.platform.log.debug('setTargetMediaState - %s', value);
     this.receiverStates.currentMediaState === 0 ? 1 : 0;
     this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
+      .then( () => {
+        this.platform.log.debug('setTargetMediaState returned');
+      })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.currentMediaState === 0 ? 1 : 0;
