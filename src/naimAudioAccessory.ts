@@ -139,10 +139,10 @@ export class NaimAudioAccessory {
                 && service !== this.smartSpeakerService
                 && service !== this.speakerService) {
               // eslint-disable-next-line brace-style
-              if (!this.inputs.some(inputFound => { inputFound.name === service.name; })) {
+              if (!this.inputs.some(inputFound => { inputFound.name === service.displayName; })) {
                 this.accessory.removeService(service);
                 this.platform.log.warn('Input: %s removed from %s',
-                  service.name,
+                  service.displayName,
                   this.accessory.displayName,
                 );
               }
