@@ -216,12 +216,12 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
       new NaimAudioAccessory(this, accessory);
 
       // link the accessory to your platform as External accessory if a TV Service is in the accessory
-      // if (accessory.getService(this.Service.Television)) {
-      //   this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
-      // } else {
-      //   this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-      // }
-      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      if (accessory.getService(this.Service.Television)) {
+        this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
+      } else {
+        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      }
+      // this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 
     }
   };
