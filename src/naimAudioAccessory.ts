@@ -69,6 +69,12 @@ export class NaimAudioAccessory {
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
 
+
+    this.tvService
+      .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
+      .onSet(this.setInputSource.bind(this))
+      .onGet(this.getInputSource.bind(this));
+
     // add a smart speaker service to handle play/pause
 
     // const speakerName = this.accessory.context.receiver.name + ' Speakers';
@@ -231,6 +237,14 @@ export class NaimAudioAccessory {
     return isActive;
   };
 
+  private setInputSource = async (value: CharacteristicValue) => {
+    this.platform.log.warn('Input Source set to %s', value);
+  };
+
+  private getInputSource = async (): Promise<CharacteristicValue> => {
+    return 1;
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private setTargetMediaState = async (_: CharacteristicValue) => {
     if (this.receiverStates.currentMediaState === 0) {
@@ -249,7 +263,7 @@ export class NaimAudioAccessory {
     );
   };
 
-  private getCurrentMediaState = async () => {
+  private getCurrentMediaState = async (): Promise<CharacteristicValue> => {
     let mediaState = this.receiverStates.currentMediaState;
     this.naimApiGet('/nowplaying', 'transportState')
       .then((returnedValue) => {
@@ -300,7 +314,7 @@ export class NaimAudioAccessory {
     this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
   };
 
-  private getMute = async () => {
+  private getMute = async (): Promise<CharacteristicValue> => {
     let isMuted = this.receiverStates.mute;
     this.naimApiGet('/levels/room', 'mute')
       .then((returnedValue) => {
@@ -328,7 +342,7 @@ export class NaimAudioAccessory {
         });
   };
 
-  private getVolume = async () => {
+  private getVolume = async (): Promise<CharacteristicValue> => {
     let volume = this.receiverStates.volume;
     this.naimApiGet('/levels/room', 'volume')
       .then((returnedValue) => {
