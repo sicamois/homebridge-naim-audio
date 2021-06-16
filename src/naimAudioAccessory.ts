@@ -17,9 +17,11 @@ type input = {
  * Each accessory may expose multiple services of different service types.
  */
 export class NaimAudioAccessory {
+  private infoService: Service;
   private tvService: Service;
   private smartSpeakerService: Service;
   private speakerService: Service;
+  private coreServices: Service[];
   private inputs: input[];
   private baseURL: string;
 
@@ -44,7 +46,7 @@ export class NaimAudioAccessory {
     this.inputs = [];
 
     // set accessory information
-    this.accessory.getService(this.platform.Service.AccessoryInformation)!
+    this.infoService = this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, receiver.manufacturer || 'Naim Audio')
       .setCharacteristic(this.platform.Characteristic.Model, receiver.modelName || 'Default-Model')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, receiver.serialNumber || 'Default-Serial');
@@ -66,8 +68,6 @@ export class NaimAudioAccessory {
     this.tvService.getCharacteristic(this.platform.Characteristic.Active)
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
-
-    this.getInputs();
 
     // add a smart speaker service to handle play/pause
 
@@ -110,13 +110,17 @@ export class NaimAudioAccessory {
     this.speakerService.getCharacteristic(this.platform.Characteristic.Mute)
       .onSet(this.setMute.bind(this))
       .onGet(this.getMute.bind(this));
+
+    // Define Core Services = all services except Inputs
+    this.coreServices = [this.infoService, this.tvService, this.smartSpeakerService, this.speakerService];
+
+    this.getInputs();
   }
 
   private getInputs = async () => {
     this.naimApiGet('/inputs', 'children')
       .then((inputsData) => {
         if (inputsData) {
-          let index = 0;
           // eslint-disable-next-line @typescript-eslint/member-delimiter-style
           inputsData.forEach((inputFound: { disabled: string; selectable: string; alias: string; name: string; ussi: string;} ) => {
             if ((!inputFound.disabled || inputFound.disabled === '0') && inputFound.selectable === '1') {
@@ -128,48 +132,38 @@ export class NaimAudioAccessory {
                 path: inputFound.ussi,
               };
               this.inputs.push(input);
-              this.addInputToAccessoryAtIndex(input, this.accessory, index);
-              index++;
             }
           });
+
+          // We have the list of inputs in this.inputs array
+          if (this.inputs.length > 0) {
+            this.addInputsToAccessory(this.inputs, this.accessory);
+          }
+
           // Clean old inputs
-          const accessoryServices = this.accessory.services;
-          accessoryServices.map(service => {
-            if(service !== this.tvService
-                && service !== this.smartSpeakerService
-                && service !== this.speakerService) {
-              // eslint-disable-next-line brace-style
-              if (!this.inputs.some(inputFound => { inputFound.name === service.displayName; })) {
-                this.accessory.removeService(service);
-                this.platform.log.warn('Input: %s removed from %s',
-                  service.displayName,
-                  this.accessory.displayName,
-                );
-              }
-            }
-          });
-        } else {
-          this.platform.log.error('No inputs found on your device !');
+          this.removeInputServicesNotIn(this.inputs, this.accessory, this.coreServices);
         }
       });
   };
 
-  private addInputToAccessoryAtIndex = (input: input, accessory: PlatformAccessory, index: number) => {
-    const inputService = this.accessory.getService(input.name) || this.accessory.addService(
-      this.platform.Service.InputSource,
-      input.name,
-      this.platform.api.hap.uuid.generate(input.name),
-    );
-    const inputSourceType = this.getSourceTypeFrom(input.canonicalName);
+  private addInputsToAccessory = (inputs: input[], accessory: PlatformAccessory) => {
+    inputs.forEach(input => {
+      const inputService = this.accessory.getService(input.name) || this.accessory.addService(
+        this.platform.Service.InputSource,
+        input.name,
+        this.platform.api.hap.uuid.generate(input.name),
+      );
+      const inputSourceType = this.getSourceTypeFrom(input.canonicalName);
 
-    inputService
-      .setCharacteristic(this.platform.Characteristic.Identifier, index)
-      .setCharacteristic(this.platform.Characteristic.ConfiguredName, input.name)
-      .setCharacteristic(this.platform.Characteristic.IsConfigured, this.platform.Characteristic.IsConfigured.CONFIGURED)
-      .setCharacteristic(this.platform.Characteristic.InputSourceType, inputSourceType);
+      inputService
+        .setCharacteristic(this.platform.Characteristic.Identifier, inputs.indexOf(input))
+        .setCharacteristic(this.platform.Characteristic.ConfiguredName, input.name)
+        .setCharacteristic(this.platform.Characteristic.IsConfigured, this.platform.Characteristic.IsConfigured.CONFIGURED)
+        .setCharacteristic(this.platform.Characteristic.InputSourceType, inputSourceType);
 
-    this.tvService.addLinkedService(inputService);
-    this.platform.log.warn('Input: %s added to %s', input.name, accessory.displayName);
+      this.tvService.addLinkedService(inputService);
+      this.platform.log.warn('Input: %s added to %s', input.name, accessory.displayName);
+    });
   };
 
   private getSourceTypeFrom = (name: string): number => {
@@ -190,6 +184,20 @@ export class NaimAudioAccessory {
       default:
         return this.platform.Characteristic.InputSourceType.OTHER;
     }
+  };
+
+  private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, excludedServices: Service[]) => {
+    const services = fromAccessory.services;
+    // eslint-disable-next-line brace-style
+    const inputServices = services.filter(service => { !excludedServices.includes(service); });
+    inputServices.forEach(inputService => {
+      // eslint-disable-next-line brace-style
+      if(inputs.some(input => { input.name === inputService.displayName; })) {
+        return;
+      }
+      this.accessory.removeService(inputService);
+      this.platform.log.warn('Input: %s removed from %s', inputService.displayName, fromAccessory.displayName);
+    });
   };
 
   private setActive = async (value: CharacteristicValue) => {
