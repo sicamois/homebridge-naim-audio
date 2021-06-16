@@ -125,7 +125,7 @@ export class NaimAudioAccessory {
           inputsData.forEach((inputFound: { disabled: string; selectable: string; alias: string; name: string; ussi: string;} ) => {
             if ((!inputFound.disabled || inputFound.disabled === '0') && inputFound.selectable === '1') {
               // rename "Playqueue" to "Playlist"
-              const correctedInputName = inputFound.name;// === 'Playqueue' ? 'Playlist' : inputFound.name;
+              const correctedInputName = inputFound.name === 'Playqueue' ? 'Playlist' : inputFound.name;
               const input: input = {
                 name: inputFound.alias || correctedInputName,
                 canonicalName: inputFound.name,
