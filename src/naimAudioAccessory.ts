@@ -149,8 +149,8 @@ export class NaimAudioAccessory {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private setTargetMediaState = async (value: CharacteristicValue) => {
-    this.platform.log.debug('setTargetMediaState - %s', value);
     this.receiverStates.currentMediaState === 0 ? 1 : 0;
+    this.platform.log.debug('setTargetMediaState - %s | currentMediaState -> %s', value, this.receiverStates.currentMediaState);
     this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
       .then( () => {
         this.platform.log.debug('setTargetMediaState returned');
@@ -163,6 +163,10 @@ export class NaimAudioAccessory {
         this.handleError(error);
         this.receiverStates.currentMediaState === 0 ? 1 : 0;
       });
+    this.smartSpeakerService.updateCharacteristic(
+      this.platform.Characteristic.TargetMediaState,
+      this.receiverStates.currentMediaState,
+    );
   };
 
   private getTargetMediaState = async () => {
