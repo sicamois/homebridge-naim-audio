@@ -103,11 +103,15 @@ export class NaimAudioAccessory {
 
     this.speakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
 
-    this.speakerService.getCharacteristic(this.platform.Characteristic.Volume)
+    if (!this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)) {
+      this.platform.log.warn('Add an optionnal volume characteristic');
+      this.smartSpeakerService.addOptionalCharacteristic(this.platform.Characteristic.Volume);
+    }
+    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)
       .onSet(this.setVolume.bind(this))
       .onGet(this.getVolume.bind(this));
 
-    this.speakerService.getCharacteristic(this.platform.Characteristic.Mute)
+    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Mute)
       .onSet(this.setMute.bind(this))
       .onGet(this.getMute.bind(this));
 
@@ -186,11 +190,11 @@ export class NaimAudioAccessory {
     }
   };
 
-  private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, nonInputServices: Service[]) => {
+  private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, excludingNonInputServices: Service[]) => {
     const inputNames = inputs.map(input => input.name);
 
     const services = fromAccessory.services;
-    const inputServices = services.filter(service => !nonInputServices.includes(service));
+    const inputServices = services.filter(service => !excludingNonInputServices.includes(service));
 
     const inputServicesToRemove = inputServices.filter(inputService => !inputNames.includes(inputService.displayName));
 
