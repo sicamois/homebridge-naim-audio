@@ -5,6 +5,12 @@ import { NaimAudioPlatform, receiver } from './naimAudioPlatform';
 
 const NAIM_API_PORT = 15081;
 
+type input = {
+  name: string;
+  canonicalName: string;
+  path: string;
+};
+
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -14,6 +20,7 @@ export class NaimAudioAccessory {
   private tvService: Service;
   private smartSpeakerService: Service;
   private speakerService: Service;
+  private inputs: input[];
   private baseURL: string;
 
   /**
@@ -34,6 +41,7 @@ export class NaimAudioAccessory {
 
     const receiver: receiver = accessory.context.receiver;
     this.baseURL = 'http://' + receiver.ip_address + ':' + NAIM_API_PORT;
+    this.inputs = [];
 
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
@@ -99,6 +107,63 @@ export class NaimAudioAccessory {
       .onSet(this.setMute.bind(this))
       .onGet(this.getMute.bind(this));
   }
+
+  private getInputs = async () => {
+    this.naimApiGet('/inputs', 'children')
+      .then((inputsData) => {
+        if (inputsData) {
+          let index = 0;
+          JSON.parse(inputsData).forEach(inputFound => {
+            if (inputFound.disabled === '0' && inputFound.selectable === '1') {
+              const input: input = {
+                name: inputFound.alias || inputFound.name,
+                canonicalName: inputFound.name,
+                path: inputFound.ussi,
+              };
+              this.inputs.push(input);
+              this.addInputToAccessoryAtIndex(input, this.accessory, index);
+              index++;
+            }
+          });
+        } else {
+          this.platform.log.error('No inputs found on your device !');
+        }
+      });
+  };
+
+  private addInputToAccessoryAtIndex = (input: input, accessory: PlatformAccessory, index: number) => {
+    const inputService = this.accessory.addService(this.platform.Service.InputSource, input.name);
+    const inputSourceType = this.getSourceTypeFrom(input.canonicalName);
+
+    inputService
+      .setCharacteristic(this.platform.Characteristic.Identifier, index)
+      .setCharacteristic(this.platform.Characteristic.ConfiguredName, input.name)
+      .setCharacteristic(this.platform.Characteristic.IsConfigured, this.platform.Characteristic.IsConfigured.CONFIGURED)
+      .setCharacteristic(this.platform.Characteristic.InputSourceType, inputSourceType);
+
+    this.tvService.addLinkedService(inputService);
+    this.platform.log.warn('Input: %s added to %s', input.name, accessory.displayName);
+  };
+
+  private getSourceTypeFrom = (name: string): number => {
+    switch (name) {
+      case 'HDMI':
+        return this.platform.Characteristic.InputSourceType.HDMI;
+      case 'Internet Radio':
+        return this.platform.Characteristic.InputSourceType.TUNER;
+      case 'Airplay':
+      case 'Chromecast built-in':
+        return this.platform.Characteristic.InputSourceType.AIRPLAY;
+      case 'USB':
+        return this.platform.Characteristic.InputSourceType.USB;
+      case 'Spotify':
+      case 'TIDAL':
+      case 'Qobuz':
+        return this.platform.Characteristic.InputSourceType.APPLICATION;
+      default:
+        return this.platform.Characteristic.InputSourceType.OTHER;
+    }
+  };
 
   private setActive = async (value: CharacteristicValue) => {
     const isActive = value as boolean;
