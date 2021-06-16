@@ -48,20 +48,25 @@ export class NaimAudioAccessory {
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.tvService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
-    this.tvService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
+    this.tvService.setCharacteristic(this.platform.Characteristic.Name, this.accessory.context.receiver.name);
+    this.tvService.setCharacteristic(this.platform.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
 
     // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
 
     // register handlers for the On/Off Characteristic
     this.tvService.getCharacteristic(this.platform.Characteristic.Active)
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
 
-    this.smartSpeakerService =
-      this.accessory.getService(this.platform.Service.SmartSpeaker) ||
-      this.accessory.addService(this.platform.Service.SmartSpeaker);
+    const speakerName = this.accessory.context.receiver.name + ' Speakers';
+    // eslint-disable-next-line brace-style
+    const speakerService = this.tvService.linkedServices.find(service => { service instanceof this.platform.Service.SmartSpeaker; });
+    if (speakerService) {
+      this.smartSpeakerService = speakerService;
+    } else {
+      this.smartSpeakerService = new this.platform.api.hap.Service(speakerName, this.platform.api.hap.uuid.generate(speakerName));
+      this.tvService.addLinkedService(this.smartSpeakerService);
+    }
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
