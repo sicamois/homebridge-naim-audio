@@ -155,15 +155,7 @@ export class NaimAudioAccessory {
     } else {
       this.receiverStates.currentMediaState = 0;
     }
-    this.platform.log.debug('setTargetMediaState - %s | currentMediaState -> %s', value, this.receiverStates.currentMediaState);
     this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
-      .then( () => {
-        this.platform.log.debug('setTargetMediaState returned');
-        this.smartSpeakerService.updateCharacteristic(
-          this.platform.Characteristic.CurrentMediaState,
-          this.receiverStates.currentMediaState,
-        );
-      })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.currentMediaState === 0 ? 1 : 0;
