@@ -119,7 +119,7 @@ export class NaimAudioAccessory {
           let index = 0;
           // eslint-disable-next-line @typescript-eslint/member-delimiter-style
           inputsData.forEach((inputFound: { disabled: string; selectable: string; alias: string; name: string; ussi: string;} ) => {
-            if (inputFound.disabled === '0' && inputFound.selectable === '1') {
+            if ((!inputFound.disabled || inputFound.disabled === '0') && inputFound.selectable === '1') {
               const input: input = {
                 name: inputFound.alias || inputFound.name,
                 canonicalName: inputFound.name,
@@ -239,6 +239,7 @@ export class NaimAudioAccessory {
           this.platform.Characteristic.CurrentMediaState,
           mediaState,
         );
+        this.tvService.getCharacteristic(this.platform.Characteristic.Active);
       })
       .catch((error) => {
         this.handleError(error);
