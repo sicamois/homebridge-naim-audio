@@ -115,7 +115,8 @@ export class NaimAudioAccessory {
       .then((inputsData) => {
         if (inputsData) {
           let index = 0;
-          JSON.parse(inputsData).forEach(inputFound => {
+          // eslint-disable-next-line @typescript-eslint/member-delimiter-style
+          inputsData.forEach((inputFound: { disabled: string; selectable: string; alias: string; name: string; ussi: string;} ) => {
             if (inputFound.disabled === '0' && inputFound.selectable === '1') {
               const input: input = {
                 name: inputFound.alias || inputFound.name,
@@ -312,7 +313,7 @@ export class NaimAudioAccessory {
     this.platform.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
     try {
       const response = await axios.get(apiURL);
-      return response.data[key] as string;
+      return response.data[key];
     } catch (error) {
       this.handleError(error, apiURL);
     }
