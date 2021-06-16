@@ -34,6 +34,7 @@ export class NaimAudioAccessory {
     currentMediaState: this.platform.Characteristic.CurrentMediaState.STOP,
     mute: false,
     volume: 0,
+    currentInput: 0,
   };
 
   constructor(
@@ -238,11 +239,22 @@ export class NaimAudioAccessory {
   };
 
   private setInputSource = async (value: CharacteristicValue) => {
-    this.platform.log.warn('Input Source set to %s', value);
+    const inputIndex = +value;
+    this.receiverStates.currentInput = inputIndex;
+    const pathToSet = this.inputs[inputIndex].path;
+    this.naimApiPut(pathToSet, 'cmd', 'select', true)
+      .catch(error => {
+        this.handleError(error);
+        this.speakerService.getCharacteristic(this.platform.Characteristic.ActiveIdentifier);
+      });
   };
 
   private getInputSource = async (): Promise<CharacteristicValue> => {
-    return 1;
+    const sourcePath = await this.naimApiGet('/nowplaying', 'source');
+    const inputPathes = this.inputs.map(input => input.path);
+    const sourceIndex = inputPathes.indexOf(sourcePath);
+    this.receiverStates.currentInput = sourceIndex;
+    return sourceIndex;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -361,7 +373,7 @@ export class NaimAudioAccessory {
 
   // Utility functions
   private naimApiGet = async (path: string, key: string) => {
-    const apiURL = this.baseURL + path;
+    const apiURL = this.baseURL + path.startsWith('/') ? '' : '/' + path;
     this.platform.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
     try {
       const response = await axios.get(apiURL);
@@ -377,7 +389,7 @@ export class NaimAudioAccessory {
     valueToSet: string,
     forceGet = false,
   ) => {
-    const apiURL = this.baseURL + path + '?' + key + '=' + valueToSet;
+    const apiURL = this.baseURL + path.startsWith('/') ? '' : '/' + path + '?' + key + '=' + valueToSet;
     this.platform.log.debug(
       'naimApiCall - PUT ' +
         (forceGet ? '(forced)' : '') + ' : ' + valueToSet + ' into ' + key + '@' + apiURL);
