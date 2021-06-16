@@ -182,14 +182,11 @@ export class NaimAudioAccessory {
     const isMuted = value as boolean;
     this.receiverStates.mute = isMuted;
     this.naimApiPut('/levels/room', 'mute', value as string)
-      .then( () => {
-        this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
-      })
       .catch(
         (error) => {
           this.handleError(error);
-          this.receiverStates.mute = false;
-          this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, false);
+          this.receiverStates.mute = !isMuted;
+          this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, !isMuted);
         });
     this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
   };
