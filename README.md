@@ -21,6 +21,7 @@ Mu-so devices are not supported.
 
 - Power the amplifier On and Off
 - Play/pause current track
+- Set input source
 - Auto-discover all your connected Naim Audio devices
 
 ## Configuration
