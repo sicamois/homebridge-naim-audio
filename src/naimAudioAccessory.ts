@@ -373,7 +373,10 @@ export class NaimAudioAccessory {
 
   // Utility functions
   private naimApiGet = async (path: string, key: string) => {
-    const apiURL = this.baseURL + (path.startsWith('/') ? '' : '/') + path;
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    const apiURL = this.baseURL + path;
     this.platform.log.debug('naimApiCall - GET : ' + key + '@' + apiURL);
     try {
       const response = await axios.get(apiURL);
@@ -389,7 +392,10 @@ export class NaimAudioAccessory {
     valueToSet: string,
     forceGet = false,
   ) => {
-    const apiURL = this.baseURL + (path.startsWith('/') ? '' : '/') + path + '?' + key + '=' + valueToSet;
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    const apiURL = this.baseURL + path + '?' + key + '=' + valueToSet;
     this.platform.log.debug(
       'naimApiCall - PUT ' +
         (forceGet ? '(forced)' : '') + ' : ' + valueToSet + ' into ' + key + '@' + apiURL);
