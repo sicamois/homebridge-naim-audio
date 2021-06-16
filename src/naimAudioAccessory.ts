@@ -186,17 +186,20 @@ export class NaimAudioAccessory {
     }
   };
 
-  private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, excludedServices: Service[]) => {
+  private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, nonInputServices: Service[]) => {
+    const inputNames = inputs.map(input => input.name);
+    this.platform.log.warn('inputNames: %s', inputNames);
+
     const services = fromAccessory.services;
     // eslint-disable-next-line brace-style
-    const inputServices = services.filter(service => { !excludedServices.includes(service); });
-    inputServices.forEach(inputService => {
-      // eslint-disable-next-line brace-style
-      if(inputs.some(input => { input.name === inputService.displayName; })) {
-        return;
-      }
-      this.accessory.removeService(inputService);
-      this.platform.log.warn('Input: %s removed from %s', inputService.displayName, fromAccessory.displayName);
+    const inputServices = services.filter(service => { !nonInputServices.includes(service); });
+    // eslint-disable-next-line brace-style
+    const inputServicesToRemove = inputServices.filter(inputService => { !inputNames.includes(inputService.displayName); });
+    this.platform.log.warn('inputServicesToRemove: %s', inputServicesToRemove);
+
+    inputServicesToRemove.forEach(service => {
+      this.accessory.removeService(service);
+      this.platform.log.warn('Input: %s removed from %s', service.displayName, fromAccessory.displayName);
     });
   };
 
