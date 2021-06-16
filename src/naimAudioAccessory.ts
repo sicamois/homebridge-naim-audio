@@ -13,6 +13,7 @@ const NAIM_API_PORT = 15081;
 export class NaimAudioAccessory {
   private tvService: Service;
   private smartSpeakerService: Service;
+  private speakerService: Service;
   private baseURL: string;
 
   /**
@@ -77,7 +78,7 @@ export class NaimAudioAccessory {
     this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
     this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
 
-    // register handlers for the On/Off Characteristic
+    // add a smart speaker service to handle play/pause
     this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
       .onGet(this.getCurrentMediaState.bind(this));
 
@@ -85,11 +86,15 @@ export class NaimAudioAccessory {
       .onSet(this.setTargetMediaState.bind(this))
       .onGet(this.getCurrentMediaState.bind(this));
 
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)
+    this.speakerService =
+      this.accessory.getService(this.platform.Service.Speaker) ||
+      this.accessory.addService(this.platform.Service.Speaker);
+
+    this.speakerService.getCharacteristic(this.platform.Characteristic.Volume)
       .onSet(this.setVolume.bind(this))
       .onGet(this.getVolume.bind(this));
 
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Mute)
+    this.speakerService.getCharacteristic(this.platform.Characteristic.Mute)
       .onSet(this.setMute.bind(this))
       .onGet(this.getMute.bind(this));
   }
@@ -120,35 +125,8 @@ export class NaimAudioAccessory {
     return isActive;
   };
 
-  private setMute = async (value: CharacteristicValue) => {
-    const isMuted = value as boolean;
-    this.receiverStates.mute = isMuted;
-    this.naimApiPut('/levels/room', 'mute', value as string)
-      .catch(
-        (error) => {
-          this.handleError(error);
-          this.receiverStates.mute = false;
-        });
-  };
-
-  private getMute = async () => {
-    let isMuted = this.receiverStates.mute;
-    this.naimApiGet('/levels/room', 'mute')
-      .then((returnedValue) => {
-        isMuted = returnedValue === '1';
-        this.receiverStates.mute = isMuted;
-        this.smartSpeakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
-      })
-      .catch((error) => {
-        this.handleError(error);
-        this.receiverStates.mute = false;
-        this.smartSpeakerService.updateCharacteristic(this.platform.Characteristic.Mute, false);
-      });
-    return isMuted;
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private setTargetMediaState = async (value: CharacteristicValue) => {
+  private setTargetMediaState = async (_: CharacteristicValue) => {
     if (this.receiverStates.currentMediaState === 0) {
       this.receiverStates.currentMediaState = 1;
     } else {
@@ -198,6 +176,33 @@ export class NaimAudioAccessory {
     return mediaState;
   };
 
+  private setMute = async (value: CharacteristicValue) => {
+    const isMuted = value as boolean;
+    this.receiverStates.mute = isMuted;
+    this.naimApiPut('/levels/room', 'mute', value as string)
+      .catch(
+        (error) => {
+          this.handleError(error);
+          this.receiverStates.mute = false;
+        });
+  };
+
+  private getMute = async () => {
+    let isMuted = this.receiverStates.mute;
+    this.naimApiGet('/levels/room', 'mute')
+      .then((returnedValue) => {
+        isMuted = returnedValue === '1';
+        this.receiverStates.mute = isMuted;
+        this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
+      })
+      .catch((error) => {
+        this.handleError(error);
+        this.receiverStates.mute = false;
+        this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, false);
+      });
+    return isMuted;
+  };
+
   private setVolume = async (value: CharacteristicValue) => {
     const initVolume = this.receiverStates.volume;
     const volume = +value;
@@ -217,11 +222,11 @@ export class NaimAudioAccessory {
         returnedValue = returnedValue|| '';
         volume = +returnedValue;
         this.receiverStates.volume = volume;
-        this.smartSpeakerService.updateCharacteristic(this.platform.Characteristic.Mute, volume);
+        this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, volume);
       })
       .catch((error) => {
         this.handleError(error);
-        this.smartSpeakerService.updateCharacteristic(this.platform.Characteristic.Mute, volume);
+        this.speakerService.updateCharacteristic(this.platform.Characteristic.Mute, volume);
       });
     return volume;
   };
