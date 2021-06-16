@@ -99,19 +99,15 @@ export class NaimAudioAccessory {
       this.accessory.getService(this.platform.Service.TelevisionSpeaker) ||
       this.accessory.addService(this.platform.Service.TelevisionSpeaker);
 
-    this.smartSpeakerService.addLinkedService(this.speakerService);
+    this.tvService.addLinkedService(this.speakerService);
 
     this.speakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
 
-    if (!this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)) {
-      this.platform.log.warn('Add an optionnal volume characteristic');
-      this.smartSpeakerService.addOptionalCharacteristic(this.platform.Characteristic.Volume);
-    }
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Volume)
+    this.speakerService.getCharacteristic(this.platform.Characteristic.Volume)
       .onSet(this.setVolume.bind(this))
       .onGet(this.getVolume.bind(this));
 
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.Mute)
+    this.speakerService.getCharacteristic(this.platform.Characteristic.Mute)
       .onSet(this.setMute.bind(this))
       .onGet(this.getMute.bind(this));
 
