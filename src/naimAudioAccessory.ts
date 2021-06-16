@@ -135,7 +135,11 @@ export class NaimAudioAccessory {
   };
 
   private addInputToAccessoryAtIndex = (input: input, accessory: PlatformAccessory, index: number) => {
-    const inputService = this.accessory.addService(this.platform.Service.InputSource, input.name);
+    const inputService = this.accessory.addService(
+      this.platform.Service.InputSource,
+      input.name,
+      this.platform.api.hap.uuid.generate(input.name),
+    );
     const inputSourceType = this.getSourceTypeFrom(input.canonicalName);
 
     inputService
