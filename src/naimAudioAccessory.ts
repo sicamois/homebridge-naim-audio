@@ -162,7 +162,7 @@ export class NaimAudioAccessory {
         .setCharacteristic(this.platform.Characteristic.InputSourceType, inputSourceType);
 
       this.tvService.addLinkedService(inputService);
-      this.platform.log.warn('Input: %s added to %s', input.name, accessory.displayName);
+      this.platform.log.debug('Input: %s added to %s', input.name, accessory.displayName);
     });
   };
 
@@ -188,19 +188,15 @@ export class NaimAudioAccessory {
 
   private removeInputServicesNotIn = (inputs: input[], fromAccessory: PlatformAccessory, nonInputServices: Service[]) => {
     const inputNames = inputs.map(input => input.name);
-    this.platform.log.warn('inputNames: %s', inputNames);
 
     const services = fromAccessory.services;
     const inputServices = services.filter(service => !nonInputServices.includes(service));
-    const inputServicesNames = inputServices.map(inputService => inputService.displayName);
-    this.platform.log.warn('inputServicesNames: %s', inputServicesNames);
 
     const inputServicesToRemove = inputServices.filter(inputService => !inputNames.includes(inputService.displayName));
-    this.platform.log.warn('inputServicesToRemove: %s', inputServicesToRemove);
 
     inputServicesToRemove.forEach(service => {
       this.accessory.removeService(service);
-      this.platform.log.warn('Input: %s removed from %s', service.displayName, fromAccessory.displayName);
+      this.platform.log.debug('Input: %s removed from %s', service.displayName, fromAccessory.displayName);
     });
   };
 
