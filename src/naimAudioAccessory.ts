@@ -58,15 +58,19 @@ export class NaimAudioAccessory {
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
 
-    const speakerName = this.accessory.context.receiver.name + ' Speakers';
-    // eslint-disable-next-line brace-style
-    const speakerService = this.tvService.linkedServices.find(service => { service instanceof this.platform.Service.SmartSpeaker; });
-    if (speakerService) {
-      this.smartSpeakerService = speakerService;
-    } else {
-      this.smartSpeakerService = new this.platform.api.hap.Service(speakerName, this.platform.api.hap.uuid.generate(speakerName));
-      this.tvService.addLinkedService(this.smartSpeakerService);
-    }
+    // const speakerName = this.accessory.context.receiver.name + ' Speakers';
+    // // eslint-disable-next-line brace-style
+    // const speakerService = this.tvService.linkedServices.find(service => { service instanceof this.platform.Service.SmartSpeaker; });
+    // if (speakerService) {
+    //   this.smartSpeakerService = speakerService;
+    // } else {
+    //   this.smartSpeakerService = new this.platform.api.hap.Service(speakerName, this.platform.api.hap.uuid.generate(speakerName));
+    //   this.tvService.addLinkedService(this.smartSpeakerService);
+    // }
+
+    this.smartSpeakerService =
+      this.accessory.getService(this.platform.Service.SmartSpeaker) ||
+      this.accessory.addService(this.platform.Service.SmartSpeaker);
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
