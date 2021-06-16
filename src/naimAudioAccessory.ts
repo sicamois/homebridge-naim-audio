@@ -132,6 +132,18 @@ export class NaimAudioAccessory {
               index++;
             }
           });
+          // Clean old inputs
+          const accessoryServices = this.accessory.services;
+          accessoryServices.map(service => {
+            if(service !== this.tvService
+                && service !== this.smartSpeakerService
+                && service !== this.speakerService) {
+              // eslint-disable-next-line brace-style
+              if (!this.inputs.some(input => { input.name === service.name; })) {
+                this.accessory.removeService(service);
+              }
+            }
+          });
         } else {
           this.platform.log.error('No inputs found on your device !');
         }
