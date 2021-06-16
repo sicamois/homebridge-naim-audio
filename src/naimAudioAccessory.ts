@@ -59,6 +59,8 @@ export class NaimAudioAccessory {
       .onSet(this.setActive.bind(this))
       .onGet(this.getActive.bind(this));
 
+    // add a smart speaker service to handle play/pause
+
     // const speakerName = this.accessory.context.receiver.name + ' Speakers';
     // // eslint-disable-next-line brace-style
     // const speakerService = this.tvService.linkedServices.find(service => { service instanceof this.platform.Service.SmartSpeaker; });
@@ -68,7 +70,6 @@ export class NaimAudioAccessory {
     //   this.smartSpeakerService = new this.platform.api.hap.Service(speakerName, this.platform.api.hap.uuid.generate(speakerName));
     //   this.tvService.addLinkedService(this.smartSpeakerService);
     // }
-
     this.smartSpeakerService =
       this.accessory.getService(this.platform.Service.SmartSpeaker) ||
       this.accessory.addService(this.platform.Service.SmartSpeaker);
@@ -78,7 +79,6 @@ export class NaimAudioAccessory {
     this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
     this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
 
-    // add a smart speaker service to handle play/pause
     this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
       .onGet(this.getCurrentMediaState.bind(this));
 
@@ -86,9 +86,12 @@ export class NaimAudioAccessory {
       .onSet(this.setTargetMediaState.bind(this))
       .onGet(this.getCurrentMediaState.bind(this));
 
+    // add a speaker service to handle volume and mute
     this.speakerService =
       this.accessory.getService(this.platform.Service.Speaker) ||
       this.accessory.addService(this.platform.Service.Speaker);
+
+    this.speakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
 
     this.speakerService.getCharacteristic(this.platform.Characteristic.Volume)
       .onSet(this.setVolume.bind(this))
