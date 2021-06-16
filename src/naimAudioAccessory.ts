@@ -145,6 +145,10 @@ export class NaimAudioAccessory {
     this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
       .then( () => {
         this.platform.log.debug('setTargetMediaState returned');
+        this.smartSpeakerService.updateCharacteristic(
+          this.platform.Characteristic.CurrentMediaState,
+          this.receiverStates.currentMediaState,
+        );
       })
       .catch((error) => {
         this.handleError(error);
