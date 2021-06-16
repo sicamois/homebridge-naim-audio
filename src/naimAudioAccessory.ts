@@ -12,7 +12,7 @@ const NAIM_API_PORT = 15081;
  */
 export class NaimAudioAccessory {
   private tvService: Service;
-  //private smartSpeakerService: Service;
+  private smartSpeakerService: Service;
   private speakerService: Service;
   private baseURL: string;
 
@@ -70,21 +70,19 @@ export class NaimAudioAccessory {
     //   this.smartSpeakerService = new this.platform.api.hap.Service(speakerName, this.platform.api.hap.uuid.generate(speakerName));
     //   this.tvService.addLinkedService(this.smartSpeakerService);
     // }
-    // this.smartSpeakerService =
-    //   this.accessory.getService(this.platform.Service.SmartSpeaker) ||
-    //   this.accessory.addService(this.platform.Service.SmartSpeaker);
+    this.smartSpeakerService =
+      this.accessory.getService(this.platform.Service.SmartSpeaker) ||
+      this.accessory.addService(this.platform.Service.SmartSpeaker);
 
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    // this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
-    // this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
+    this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
+    this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
 
-    // this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
-    //   .onGet(this.getCurrentMediaState.bind(this));
+    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
+      .onGet(this.getCurrentMediaState.bind(this));
 
-    // this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.TargetMediaState)
-    //   .onSet(this.setTargetMediaState.bind(this))
-    //   .onGet(this.getCurrentMediaState.bind(this));
+    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.TargetMediaState)
+      .onSet(this.setTargetMediaState.bind(this))
+      .onGet(this.getCurrentMediaState.bind(this));
 
     // add a speaker service to handle volume and mute
     this.speakerService =
@@ -128,56 +126,56 @@ export class NaimAudioAccessory {
     return isActive;
   };
 
-  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // private setTargetMediaState = async (_: CharacteristicValue) => {
-  //   if (this.receiverStates.currentMediaState === 0) {
-  //     this.receiverStates.currentMediaState = 1;
-  //   } else {
-  //     this.receiverStates.currentMediaState = 0;
-  //   }
-  //   this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
-  //     .catch((error) => {
-  //       this.handleError(error);
-  //       this.receiverStates.currentMediaState === 0 ? 1 : 0;
-  //     });
-  //   this.smartSpeakerService.updateCharacteristic(
-  //     this.platform.Characteristic.CurrentMediaState,
-  //     this.receiverStates.currentMediaState,
-  //   );
-  // };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private setTargetMediaState = async (_: CharacteristicValue) => {
+    if (this.receiverStates.currentMediaState === 0) {
+      this.receiverStates.currentMediaState = 1;
+    } else {
+      this.receiverStates.currentMediaState = 0;
+    }
+    this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
+      .catch((error) => {
+        this.handleError(error);
+        this.receiverStates.currentMediaState === 0 ? 1 : 0;
+      });
+    this.smartSpeakerService.updateCharacteristic(
+      this.platform.Characteristic.CurrentMediaState,
+      this.receiverStates.currentMediaState,
+    );
+  };
 
-  // private getCurrentMediaState = async () => {
-  //   let mediaState = this.receiverStates.currentMediaState;
-  //   this.naimApiGet('/nowplaying', 'transportState')
-  //     .then((returnedValue) => {
-  //       switch (returnedValue?.toString()) {
-  //         case '2':
-  //           mediaState = this.platform.Characteristic.CurrentMediaState.PLAY;
-  //           break;
-  //         case '1':
-  //         case '3':
-  //           mediaState = this.platform.Characteristic.CurrentMediaState.PAUSE;
-  //           break;
-  //         default:
-  //           mediaState = this.platform.Characteristic.CurrentMediaState.STOP;
-  //           break;
-  //       }
-  //       this.receiverStates.currentMediaState = mediaState;
-  //       this.smartSpeakerService.updateCharacteristic(
-  //         this.platform.Characteristic.CurrentMediaState,
-  //         mediaState,
-  //       );
-  //     })
-  //     .catch((error) => {
-  //       this.handleError(error);
-  //       this.smartSpeakerService.updateCharacteristic(
-  //         this.platform.Characteristic.CurrentMediaState,
-  //         mediaState,
-  //       );
-  //     });
-  //   // return as soon as possible, update on the resoution of the async function
-  //   return mediaState;
-  // };
+  private getCurrentMediaState = async () => {
+    let mediaState = this.receiverStates.currentMediaState;
+    this.naimApiGet('/nowplaying', 'transportState')
+      .then((returnedValue) => {
+        switch (returnedValue?.toString()) {
+          case '2':
+            mediaState = this.platform.Characteristic.CurrentMediaState.PLAY;
+            break;
+          case '1':
+          case '3':
+            mediaState = this.platform.Characteristic.CurrentMediaState.PAUSE;
+            break;
+          default:
+            mediaState = this.platform.Characteristic.CurrentMediaState.STOP;
+            break;
+        }
+        this.receiverStates.currentMediaState = mediaState;
+        this.smartSpeakerService.updateCharacteristic(
+          this.platform.Characteristic.CurrentMediaState,
+          mediaState,
+        );
+      })
+      .catch((error) => {
+        this.handleError(error);
+        this.smartSpeakerService.updateCharacteristic(
+          this.platform.Characteristic.CurrentMediaState,
+          mediaState,
+        );
+      });
+    // return as soon as possible, update on the resoution of the async function
+    return mediaState;
+  };
 
   private setMute = async (value: CharacteristicValue) => {
     const isMuted = value as boolean;
