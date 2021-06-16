@@ -88,8 +88,8 @@ export class NaimAudioAccessory {
 
     // add a speaker service to handle volume and mute
     this.speakerService =
-      this.accessory.getService(this.platform.Service.Microphone) ||
-      this.accessory.addService(this.platform.Service.Microphone);
+      this.accessory.getService(this.platform.Service.Speaker) ||
+      this.accessory.addService(this.platform.Service.Speaker);
 
     this.speakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
 
