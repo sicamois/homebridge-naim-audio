@@ -146,7 +146,7 @@ export class NaimAudioAccessory {
       .then( () => {
         this.platform.log.debug('setTargetMediaState returned');
         this.smartSpeakerService.updateCharacteristic(
-          this.platform.Characteristic.CurrentMediaState,
+          this.platform.Characteristic.TargetMediaState,
           this.receiverStates.currentMediaState,
         );
       })
