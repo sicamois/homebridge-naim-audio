@@ -76,15 +76,15 @@ export class NaimAudioAccessory {
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
-    this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
+    // this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
+    // this.smartSpeakerService.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
 
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
-      .onGet(this.getCurrentMediaState.bind(this));
+    // this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
+    //   .onGet(this.getCurrentMediaState.bind(this));
 
-    this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.TargetMediaState)
-      .onSet(this.setTargetMediaState.bind(this))
-      .onGet(this.getCurrentMediaState.bind(this));
+    // this.smartSpeakerService.getCharacteristic(this.platform.Characteristic.TargetMediaState)
+    //   .onSet(this.setTargetMediaState.bind(this))
+    //   .onGet(this.getCurrentMediaState.bind(this));
 
     // add a speaker service to handle volume and mute
     this.speakerService =
