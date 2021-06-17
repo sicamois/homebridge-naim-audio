@@ -105,7 +105,7 @@ export class NaimAudioAccessory {
       .onSet(this.setVolume.bind(this))
       .onGet(this.getVolume.bind(this));
 
-    this.tvService.addLinkedService(this.speakerService);
+    // this.tvService.addLinkedService(this.speakerService);
 
     // add a smart speaker service to handle play/pause
 
