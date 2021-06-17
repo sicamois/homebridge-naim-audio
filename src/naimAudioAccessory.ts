@@ -260,14 +260,13 @@ export class NaimAudioAccessory {
 
   private getInputSource = async (): Promise<CharacteristicValue> => {
     const sourcePath = await this.naimApiGet('/nowplaying', 'source');
-    this.platform.log.warn('result from Get Source : %s', sourcePath);
-    
-    const inputPathes = this.inputs.map(input => input.path);
-    this.platform.log.warn('inputPathes: %s', inputPathes);
-    const sourceIndex = inputPathes.indexOf(sourcePath);
-    this.platform.log.warn('sourceIndex: %s', sourceIndex);
-    this.receiverStates.currentInput = sourceIndex;
-    return sourceIndex;
+    if (sourcePath) {
+      const inputPathes = this.inputs.map(input => input.path);
+      const sourceIndex = inputPathes.indexOf(sourcePath);
+      this.receiverStates.currentInput = sourceIndex;
+      return sourceIndex;
+    }
+    return 0;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
