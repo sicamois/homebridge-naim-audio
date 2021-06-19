@@ -52,8 +52,9 @@ export class NaimAudioAccessory {
     this.name = accessory.displayName;
 
     // set accessory information
-    this.infoService = this.accessory.getService(this.platform.Service.AccessoryInformation) ||
-    this.accessory.addService(this.platform.Service.AccessoryInformation);
+    this.infoService =
+      this.accessory.getService(this.platform.Service.AccessoryInformation) ||
+      this.accessory.addService(this.platform.Service.AccessoryInformation);
 
     this.infoService
       .setCharacteristic(this.platform.Characteristic.Manufacturer, receiver.manufacturer || 'Naim Audio')
@@ -67,8 +68,11 @@ export class NaimAudioAccessory {
       // get the Television service if it exists, otherwise create a new Television service
       // you can create multiple services for each accessory
       this.service =
-      this.accessory.getService(this.platform.Service.Television) ||
-      this.accessory.addService(this.platform.Service.Television);
+        this.accessory.getService(this.platform.Service.Television) ||
+        this.accessory.addService(this.platform.Service.Television);
+
+      // Define Core Services = all services except Inputs
+      this.coreServices.push(this.service);
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -94,37 +98,16 @@ export class NaimAudioAccessory {
         .onSet(this.setInputSource.bind(this))
         .onGet(this.getInputSource.bind(this));
 
-      // Define Core Services = all services except Inputs
-      this.coreServices.push(this.service);
-
       this.getInputs();
+
     } else if (this.category === this.platform.api.hap.Categories.SPEAKER) {
       // add a smart speaker service to handle volume and mute
       this.service =
-      this.accessory.getService(this.platform.Service.SmartSpeaker) ||
-      this.accessory.addService(this.platform.Service.SmartSpeaker);
+        this.accessory.getService(this.platform.Service.SmartSpeaker) ||
+        this.accessory.addService(this.platform.Service.SmartSpeaker);
 
-      this.service
-        .setCharacteristic(this.platform.Characteristic.VolumeControlType, this.platform.Characteristic.VolumeControlType.ABSOLUTE);
-
-      // register handlers for the On/Off Characteristic
-      this.service!.getCharacteristic(this.platform.Characteristic.Active)
-        .onSet(this.setActive.bind(this))
-        .onGet(this.getActive.bind(this));
-
-      this.service!.getCharacteristic(this.platform.Characteristic.Mute)
-        .onSet(this.setMute.bind(this))
-        .onGet(this.getMute.bind(this));
-
-      this.service!.getCharacteristic(this.platform.Characteristic.VolumeSelector)
-        .onSet(this.setVolumeRelative.bind(this));
-
-      this.service!.getCharacteristic(this.platform.Characteristic.Volume)
-        .onSet(this.setVolume.bind(this))
-        .onGet(this.getVolume.bind(this));
-
-      this.service!.setCharacteristic(this.platform.Characteristic.Name, accessory.context.receiver.name);
-      this.service!.setCharacteristic(this.platform.Characteristic.ConfiguredName, accessory.context.receiver.name);
+      // Define Core Services = all services except Inputs
+      this.coreServices.push(this.service);
 
       this.service!.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
         .onGet(this.getCurrentMediaState.bind(this));
@@ -133,8 +116,23 @@ export class NaimAudioAccessory {
         .onSet(this.setTargetMediaState.bind(this))
         .onGet(this.getCurrentMediaState.bind(this));
 
-      // Define Core Services = all services except Inputs
-      this.coreServices.push(this.service);
+      // set the service name, this is what is displayed as the default name on the Home app
+      // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
+      this.service!.setCharacteristic(this.platform.Characteristic.Name, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.platform.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
+
+      this.service!.getCharacteristic(this.platform.Characteristic.Mute)
+        .onSet(this.setMute.bind(this))
+        .onGet(this.getMute.bind(this));
+
+      this.service!.getCharacteristic(this.platform.Characteristic.Volume)
+        .onSet(this.setVolume.bind(this))
+        .onGet(this.getVolume.bind(this));
+
+      // register handlers for the On/Off Characteristic
+      this.service!.addCharacteristic(this.platform.Characteristic.Active)
+        .onSet(this.setActive.bind(this))
+        .onGet(this.getActive.bind(this));
     }
   }
 
