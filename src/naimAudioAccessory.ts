@@ -102,22 +102,22 @@ export class NaimAudioAccessory {
 
       this.getInputs();
 
-    } else if (this.category === Categories.HOMEPOD) {
+    } else if (this.category === Categories.SPEAKER) {
       this.platform.log.warn('I found an HOMEPOD !!!');
       // add a smart speaker service to handle volume and mute
       this.service =
-        this.accessory.getService(this.Service.SmartSpeaker) ||
-        this.accessory.addService(this.Service.SmartSpeaker);
+        this.accessory.getService(this.Service.Speaker) ||
+        this.accessory.addService(this.Service.Speaker);
 
       // Define Core Services = all services except Inputs
       this.coreServices.push(this.service);
 
-      this.service!.getCharacteristic(this.Characteristic.CurrentMediaState)
-        .onGet(this.getCurrentMediaState.bind(this));
+      // this.service!.getCharacteristic(this.Characteristic.CurrentMediaState)
+      //   .onGet(this.getCurrentMediaState.bind(this));
 
-      this.service!.getCharacteristic(this.Characteristic.TargetMediaState)
-        .onSet(this.setTargetMediaState.bind(this))
-        .onGet(this.getCurrentMediaState.bind(this));
+      // this.service!.getCharacteristic(this.Characteristic.TargetMediaState)
+      //   .onSet(this.setTargetMediaState.bind(this))
+      //   .onGet(this.getCurrentMediaState.bind(this));
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
