@@ -171,7 +171,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
 
   private readonly processReceiver = (receiver: receiver) => {
     const receiverName = receiver.name;
-    const speakerName = receiver.name + 'Speaker';
+    const speakerName = receiver.name + ' Speaker';
 
     const receiverUuid = this.api.hap.uuid.generate(receiverName);
     const speakerUuid = this.api.hap.uuid.generate(speakerName);
@@ -227,7 +227,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
       const speakerAccessory = new this.api.platformAccessory(
         speakerName,
         speakerUuid,
-        this.api.hap.Categories.HOMEPOD,
+        this.api.hap.Categories.SPEAKER,
       );
 
       // store a copy of the device object in the `accessory.context`

@@ -26,7 +26,6 @@ export class NaimAudioAccessory {
   private baseURL: string;
   private volumeIncrement: number;
   private category: Categories;
-  private name: string;
 
   /**
    * These are just used to create a working example
@@ -51,7 +50,6 @@ export class NaimAudioAccessory {
     this.volumeIncrement = 1;
     this.coreServices = [];
     this.category = accessory.category;
-    this.name = accessory.displayName;
 
     // set accessory information
     this.infoService =
@@ -78,8 +76,8 @@ export class NaimAudioAccessory {
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-      this.service!.setCharacteristic(this.Characteristic.Name, this.accessory.context.receiver.name);
-      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.Name, receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, receiver.name);
 
 
       this.service!.setCharacteristic(
@@ -102,8 +100,7 @@ export class NaimAudioAccessory {
 
       this.getInputs();
 
-    } else if (this.category === Categories.HOMEPOD) {
-      this.platform.log.warn('I found an HOMEPOD !!!');
+    } else if (this.category === Categories.SPEAKER) {
       // add a smart speaker service to handle volume and mute
       this.service =
         this.accessory.getService(this.Service.SmartSpeaker) ||
@@ -121,8 +118,8 @@ export class NaimAudioAccessory {
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-      this.service!.setCharacteristic(this.Characteristic.Name, this.accessory.context.receiver.name);
-      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.Name, accessory.displayName);
+      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, accessory.displayName);
 
       this.service!.getCharacteristic(this.Characteristic.Mute)
         .onSet(this.setMute.bind(this))
