@@ -229,6 +229,7 @@ export class NaimAudioAccessory {
       (error) => {
         this.handleError(error);
         this.receiverStates.powerOn = false;
+        this.service!.getCharacteristic(this.Characteristic.ActiveIdentifier);
       });
   };
 
