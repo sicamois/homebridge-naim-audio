@@ -102,7 +102,7 @@ export class NaimAudioAccessory {
 
       this.getInputs();
 
-    } else if (this.category === Categories.SPEAKER) {
+    } else if (this.category === Categories.HOMEPOD) {
       this.platform.log.warn('I found an HOMEPOD !!!');
       // add a smart speaker service to handle volume and mute
       this.service =

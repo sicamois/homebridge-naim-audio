@@ -227,7 +227,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
       const speakerAccessory = new this.api.platformAccessory(
         speakerName,
         speakerUuid,
-        this.api.hap.Categories.SPEAKER,
+        this.api.hap.Categories.HOMEPOD,
       );
 
       // store a copy of the device object in the `accessory.context`
