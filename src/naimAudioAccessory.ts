@@ -102,8 +102,12 @@ export class NaimAudioAccessory {
       this.accessory.addService(this.platform.Service.SmartSpeaker);
 
       this.service
-        .setCharacteristic(this.platform.Characteristic.Active, this.platform.Characteristic.Active.ACTIVE)
         .setCharacteristic(this.platform.Characteristic.VolumeControlType, this.platform.Characteristic.VolumeControlType.ABSOLUTE);
+
+      // register handlers for the On/Off Characteristic
+      this.service!.getCharacteristic(this.platform.Characteristic.Active)
+        .onSet(this.setActive.bind(this))
+        .onGet(this.getActive.bind(this));
 
       this.service!.getCharacteristic(this.platform.Characteristic.Mute)
         .onSet(this.setMute.bind(this))

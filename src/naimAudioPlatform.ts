@@ -12,8 +12,8 @@ import { Client, SsdpHeaders } from 'node-ssdp';
 import { Parser } from 'xml2js';
 import { RemoteInfo } from 'dgram';
 
-// import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { PLUGIN_NAME } from './settings';
+import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
+// import { PLUGIN_NAME } from './settings';
 import { NaimAudioAccessory } from './naimAudioAccessory';
 
 export type receiver = {
@@ -245,7 +245,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
       // } else {
       //   this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       // }
-      this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory, speakerAccessory]);
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [receiverAccessory, speakerAccessory]);
 
     }
   };
