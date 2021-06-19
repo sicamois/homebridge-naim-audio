@@ -12,7 +12,8 @@ import { Client, SsdpHeaders } from 'node-ssdp';
 import { Parser } from 'xml2js';
 import { RemoteInfo } from 'dgram';
 
-import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
+// import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
+import { PLUGIN_NAME } from './settings';
 import { NaimAudioAccessory } from './naimAudioAccessory';
 
 export type receiver = {
@@ -169,20 +170,20 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
   };
 
   private readonly processReceiver = (receiver: receiver) => {
-    const uuid = this.api.hap.uuid.generate(receiver.name);
+    const receiverName = receiver.name;
+    const speakerName = receiver.name + 'Speaker';
+
+    const receiverUuid = this.api.hap.uuid.generate(receiverName);
+    const speakerUuid = this.api.hap.uuid.generate(speakerName);
 
     // see if an accessory with the same uuid has already been registered and restored from
     // the cached devices we stored in the `configureAccessory` method above
-    const existingAccessory = this.accessories.find(
-      (accessory) => accessory.UUID === uuid,
-    );
+    const existingReceiverAccessory = this.accessories.find((accessory) => accessory.UUID === receiverUuid);
+    const existingSpeakerAccessory = this.accessories.find((accessory) => accessory.UUID === speakerUuid);
 
-    if (existingAccessory) {
+    if (existingReceiverAccessory) {
       // the accessory already exists
-      this.log.info(
-        'Restoring existing accessory from cache:',
-        existingAccessory.displayName,
-      );
+      this.log.info('Restoring existing accessory from cache:', existingReceiverAccessory.displayName);
 
       // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
       // existingAccessory.context.device = device;
@@ -190,38 +191,61 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
 
       // create the accessory handler for the restored accessory
       // this is imported from `platformAccessory.ts`
-      new NaimAudioAccessory(this, existingAccessory);
+      new NaimAudioAccessory(this, existingReceiverAccessory);
 
       // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
       // remove platform accessories when no longer present
       // this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
       // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
+    } else if (existingSpeakerAccessory) {
+      // the accessory already exists
+      this.log.info('Restoring existing accessory from cache:', existingSpeakerAccessory.displayName);
+
+      // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
+      // existingAccessory.context.device = device;
+      // this.api.updatePlatformAccessories([existingAccessory]);
+
+      // create the accessory handler for the restored accessory
+      // this is imported from `platformAccessory.ts`
+      new NaimAudioAccessory(this, existingSpeakerAccessory);
+
+      // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
+      // remove platform accessories when no longer present
+      // this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
+      // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
+
     } else {
       // the accessory does not yet exist, so we need to create it
-      this.log.info('Adding new accessory:', receiver.name);
+      this.log.info('Adding new accessories: %s and %s', receiverName, speakerName);
 
-      // create a new accessory
-      const accessory = new this.api.platformAccessory(
-        receiver.name,
-        uuid,
+      // create two new accessories : Receiver and Speaker
+      const receiverAccessory = new this.api.platformAccessory(
+        receiverName,
+        receiverUuid,
         this.api.hap.Categories.AUDIO_RECEIVER,
+      );
+      const speakerAccessory = new this.api.platformAccessory(
+        speakerName,
+        speakerUuid,
+        this.api.hap.Categories.SPEAKER,
       );
 
       // store a copy of the device object in the `accessory.context`
       // the `context` property can be used to store any data about the accessory you may need
-      accessory.context.receiver = receiver;
+      receiverAccessory.context.receiver = receiver;
+      speakerAccessory.context.receiver = receiver;
 
       // create the accessory handler for the newly create accessory
       // this is imported from `platformAccessory.ts`
-      new NaimAudioAccessory(this, accessory);
+      new NaimAudioAccessory(this, receiverAccessory);
 
       // link the accessory to your platform as External accessory if a TV Service is in the accessory
-      if (accessory.getService(this.Service.Television)) {
-        this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
-      } else {
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-      }
-      // this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      // if (accessory.getService(this.Service.Television)) {
+      //   this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
+      // } else {
+      //   this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      // }
+      this.api.publishExternalAccessories(PLUGIN_NAME, [receiverAccessory, speakerAccessory]);
 
     }
   };
