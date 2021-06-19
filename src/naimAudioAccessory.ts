@@ -266,6 +266,7 @@ export class NaimAudioAccessory {
       const inputPathes = this.inputs.map(input => input.path);
       const sourceIndex = inputPathes.indexOf(sourcePath);
       this.receiverStates.currentInput = sourceIndex;
+      this.service!.updateCharacteristic(this.Characteristic.ActiveIdentifier, sourceIndex);
       return sourceIndex;
     }
     return 0;
