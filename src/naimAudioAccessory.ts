@@ -1,4 +1,4 @@
-import { Service, PlatformAccessory, CharacteristicValue, Categories } from 'homebridge';
+import { Service, PlatformAccessory, CharacteristicValue, Categories, Characteristic } from 'homebridge';
 import axios from 'axios';
 
 import { NaimAudioPlatform, receiver } from './naimAudioPlatform';
@@ -17,6 +17,8 @@ type input = {
  * Each accessory may expose multiple services of different service types.
  */
 export class NaimAudioAccessory {
+  public readonly Service: typeof Service = this.platform.Service;
+  public readonly Characteristic: typeof Characteristic = this.platform.Characteristic;
   private infoService: Service;
   private service?: Service;
   private coreServices: Service[];
@@ -32,7 +34,7 @@ export class NaimAudioAccessory {
    */
   private receiverStates = {
     powerOn: false,
-    currentMediaState: this.platform.Characteristic.CurrentMediaState.STOP,
+    currentMediaState: this.Characteristic.CurrentMediaState.STOP,
     mute: false,
     volume: 0,
     currentInput: 0,
@@ -53,84 +55,85 @@ export class NaimAudioAccessory {
 
     // set accessory information
     this.infoService =
-      this.accessory.getService(this.platform.Service.AccessoryInformation) ||
-      this.accessory.addService(this.platform.Service.AccessoryInformation);
+      this.accessory.getService(this.Service.AccessoryInformation) ||
+      this.accessory.addService(this.Service.AccessoryInformation);
 
     this.infoService
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, receiver.manufacturer || 'Naim Audio')
-      .setCharacteristic(this.platform.Characteristic.Model, receiver.modelName || 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, receiver.serialNumber || 'Default-Serial');
+      .setCharacteristic(this.Characteristic.Manufacturer, receiver.manufacturer || 'Naim Audio')
+      .setCharacteristic(this.Characteristic.Model, receiver.modelName || 'Default-Model')
+      .setCharacteristic(this.Characteristic.SerialNumber, receiver.serialNumber || 'Default-Serial');
 
     this.coreServices.push(this.infoService);
 
-    if (this.category === this.platform.api.hap.Categories.AUDIO_RECEIVER) {
+    if (this.category === Categories.AUDIO_RECEIVER) {
 
       // get the Television service if it exists, otherwise create a new Television service
       // you can create multiple services for each accessory
       this.service =
-        this.accessory.getService(this.platform.Service.Television) ||
-        this.accessory.addService(this.platform.Service.Television);
+        this.accessory.getService(this.Service.Television) ||
+        this.accessory.addService(this.Service.Television);
 
       // Define Core Services = all services except Inputs
       this.coreServices.push(this.service);
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-      this.service!.setCharacteristic(this.platform.Characteristic.Name, this.accessory.context.receiver.name);
-      this.service!.setCharacteristic(this.platform.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.Name, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
 
 
       this.service!.setCharacteristic(
-        this.platform.Characteristic.SleepDiscoveryMode,
-        this.platform.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE,
+        this.Characteristic.SleepDiscoveryMode,
+        this.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE,
       );
 
       // each service must implement at-minimum the "required characteristics" for the given service type
 
       // register handlers for the On/Off Characteristic
-      this.service!.getCharacteristic(this.platform.Characteristic.Active)
+      this.service!.getCharacteristic(this.Characteristic.Active)
         .onSet(this.setActive.bind(this))
         .onGet(this.getActive.bind(this));
 
 
       this.service
-        .getCharacteristic(this.platform.Characteristic.ActiveIdentifier)
+        .getCharacteristic(this.Characteristic.ActiveIdentifier)
         .onSet(this.setInputSource.bind(this))
         .onGet(this.getInputSource.bind(this));
 
       this.getInputs();
 
-    } else if (this.category === this.platform.api.hap.Categories.SPEAKER) {
+    } else if (this.category === Categories.HOMEPOD) {
+      this.platform.log.warn('I found an HOMEPOD !!!');
       // add a smart speaker service to handle volume and mute
       this.service =
-        this.accessory.getService(this.platform.Service.SmartSpeaker) ||
-        this.accessory.addService(this.platform.Service.SmartSpeaker);
+        this.accessory.getService(this.Service.SmartSpeaker) ||
+        this.accessory.addService(this.Service.SmartSpeaker);
 
       // Define Core Services = all services except Inputs
       this.coreServices.push(this.service);
 
-      this.service!.getCharacteristic(this.platform.Characteristic.CurrentMediaState)
+      this.service!.getCharacteristic(this.Characteristic.CurrentMediaState)
         .onGet(this.getCurrentMediaState.bind(this));
 
-      this.service!.getCharacteristic(this.platform.Characteristic.TargetMediaState)
+      this.service!.getCharacteristic(this.Characteristic.TargetMediaState)
         .onSet(this.setTargetMediaState.bind(this))
         .onGet(this.getCurrentMediaState.bind(this));
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-      this.service!.setCharacteristic(this.platform.Characteristic.Name, this.accessory.context.receiver.name);
-      this.service!.setCharacteristic(this.platform.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.Name, this.accessory.context.receiver.name);
+      this.service!.setCharacteristic(this.Characteristic.ConfiguredName, this.accessory.context.receiver.name);
 
-      this.service!.getCharacteristic(this.platform.Characteristic.Mute)
+      this.service!.getCharacteristic(this.Characteristic.Mute)
         .onSet(this.setMute.bind(this))
         .onGet(this.getMute.bind(this));
 
-      this.service!.getCharacteristic(this.platform.Characteristic.Volume)
+      this.service!.getCharacteristic(this.Characteristic.Volume)
         .onSet(this.setVolume.bind(this))
         .onGet(this.getVolume.bind(this));
 
       // register handlers for the On/Off Characteristic
-      this.service!.addCharacteristic(this.platform.Characteristic.Active)
+      this.service!.addCharacteristic(this.Characteristic.Active)
         .onSet(this.setActive.bind(this))
         .onGet(this.getActive.bind(this));
     }
@@ -168,17 +171,17 @@ export class NaimAudioAccessory {
   private addInputsToAccessory = (inputs: input[], accessory: PlatformAccessory) => {
     inputs.forEach(input => {
       const inputService = this.accessory.getService(input.name) || this.accessory.addService(
-        this.platform.Service.InputSource,
+        this.Service.InputSource,
         input.name,
         this.platform.api.hap.uuid.generate(input.name),
       );
       const inputSourceType = this.getSourceTypeFrom(input.canonicalName);
 
       inputService
-        .setCharacteristic(this.platform.Characteristic.Identifier, inputs.indexOf(input))
-        .setCharacteristic(this.platform.Characteristic.ConfiguredName, input.name)
-        .setCharacteristic(this.platform.Characteristic.IsConfigured, this.platform.Characteristic.IsConfigured.CONFIGURED)
-        .setCharacteristic(this.platform.Characteristic.InputSourceType, inputSourceType);
+        .setCharacteristic(this.Characteristic.Identifier, inputs.indexOf(input))
+        .setCharacteristic(this.Characteristic.ConfiguredName, input.name)
+        .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
+        .setCharacteristic(this.Characteristic.InputSourceType, inputSourceType);
 
       this.service!.addLinkedService(inputService);
       this.platform.log.debug('Input: %s added to %s', input.name, accessory.displayName);
@@ -188,20 +191,20 @@ export class NaimAudioAccessory {
   private getSourceTypeFrom = (name: string): number => {
     switch (name) {
       case 'HDMI':
-        return this.platform.Characteristic.InputSourceType.HDMI;
+        return this.Characteristic.InputSourceType.HDMI;
       case 'Internet Radio':
-        return this.platform.Characteristic.InputSourceType.TUNER;
+        return this.Characteristic.InputSourceType.TUNER;
       case 'Airplay':
       case 'Chromecast built-in':
-        return this.platform.Characteristic.InputSourceType.AIRPLAY;
+        return this.Characteristic.InputSourceType.AIRPLAY;
       case 'USB':
-        return this.platform.Characteristic.InputSourceType.USB;
+        return this.Characteristic.InputSourceType.USB;
       case 'Spotify':
       case 'TIDAL':
       case 'Qobuz':
-        return this.platform.Characteristic.InputSourceType.APPLICATION;
+        return this.Characteristic.InputSourceType.APPLICATION;
       default:
-        return this.platform.Characteristic.InputSourceType.OTHER;
+        return this.Characteristic.InputSourceType.OTHER;
     }
   };
 
@@ -235,12 +238,12 @@ export class NaimAudioAccessory {
       .then((returnedValue) => {
         isActive = returnedValue === 'on';
         this.receiverStates.powerOn = isActive;
-        this.service!.updateCharacteristic(this.platform.Characteristic.Active, isActive);
+        this.service!.updateCharacteristic(this.Characteristic.Active, isActive);
       })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.powerOn = false;
-        this.service!.updateCharacteristic(this.platform.Characteristic.Active, false);
+        this.service!.updateCharacteristic(this.Characteristic.Active, false);
       });
     return isActive;
   };
@@ -252,7 +255,7 @@ export class NaimAudioAccessory {
     this.naimApiPut(pathToSet, 'cmd', 'select', true)
       .catch(error => {
         this.handleError(error);
-        this.service!.getCharacteristic(this.platform.Characteristic.ActiveIdentifier);
+        this.service!.getCharacteristic(this.Characteristic.ActiveIdentifier);
       });
   };
 
@@ -280,7 +283,7 @@ export class NaimAudioAccessory {
         this.receiverStates.currentMediaState === 0 ? 1 : 0;
       });
     this.service!.updateCharacteristic(
-      this.platform.Characteristic.CurrentMediaState,
+      this.Characteristic.CurrentMediaState,
       this.receiverStates.currentMediaState,
     );
   };
@@ -291,27 +294,27 @@ export class NaimAudioAccessory {
       .then((returnedValue) => {
         switch (returnedValue?.toString()) {
           case '2':
-            mediaState = this.platform.Characteristic.CurrentMediaState.PLAY;
+            mediaState = this.Characteristic.CurrentMediaState.PLAY;
             break;
           case '1':
           case '3':
-            mediaState = this.platform.Characteristic.CurrentMediaState.PAUSE;
+            mediaState = this.Characteristic.CurrentMediaState.PAUSE;
             break;
           default:
-            mediaState = this.platform.Characteristic.CurrentMediaState.STOP;
+            mediaState = this.Characteristic.CurrentMediaState.STOP;
             break;
         }
         this.receiverStates.currentMediaState = mediaState;
         this.service!.updateCharacteristic(
-          this.platform.Characteristic.CurrentMediaState,
+          this.Characteristic.CurrentMediaState,
           mediaState,
         );
-        this.service!.getCharacteristic(this.platform.Characteristic.Active);
+        this.service!.getCharacteristic(this.Characteristic.Active);
       })
       .catch((error) => {
         this.handleError(error);
         this.service!.updateCharacteristic(
-          this.platform.Characteristic.CurrentMediaState,
+          this.Characteristic.CurrentMediaState,
           mediaState,
         );
       });
@@ -325,15 +328,15 @@ export class NaimAudioAccessory {
     this.receiverStates.mute = isMuted;
     this.naimApiPut('/levels/room', 'mute', value as string)
       .then( () => {
-        this.service!.getCharacteristic(this.platform.Characteristic.Mute);
+        this.service!.getCharacteristic(this.Characteristic.Mute);
       })
       .catch(
         (error) => {
           this.handleError(error);
           this.receiverStates.mute = !isMuted;
-          this.service!.updateCharacteristic(this.platform.Characteristic.Mute, !isMuted);
+          this.service!.updateCharacteristic(this.Characteristic.Mute, !isMuted);
         });
-    this.service!.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
+    this.service!.updateCharacteristic(this.Characteristic.Mute, isMuted);
   };
 
   private getMute = async (): Promise<CharacteristicValue> => {
@@ -342,19 +345,19 @@ export class NaimAudioAccessory {
       .then((returnedValue) => {
         isMuted = returnedValue === '1';
         this.receiverStates.mute = isMuted;
-        this.service!.updateCharacteristic(this.platform.Characteristic.Mute, isMuted);
+        this.service!.updateCharacteristic(this.Characteristic.Mute, isMuted);
       })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.mute = false;
-        this.service!.updateCharacteristic(this.platform.Characteristic.Mute, false);
+        this.service!.updateCharacteristic(this.Characteristic.Mute, false);
       });
     return isMuted;
   };
 
   private setVolumeRelative = async (value: CharacteristicValue) => {
     let volume = this.receiverStates.volume;
-    if (value === this.platform.Characteristic.VolumeSelector.INCREMENT) {
+    if (value === this.Characteristic.VolumeSelector.INCREMENT) {
       volume = volume + this.volumeIncrement;
       this.receiverStates.volume = volume;
       this.naimApiPut('/levels/room', 'volume', volume.toString())
@@ -364,7 +367,7 @@ export class NaimAudioAccessory {
             this.receiverStates.volume = volume - this.volumeIncrement;
           });
     }
-    if (value === this.platform.Characteristic.VolumeSelector.DECREMENT) {
+    if (value === this.Characteristic.VolumeSelector.DECREMENT) {
       volume = volume - this.volumeIncrement;
       this.receiverStates.volume = volume;
       this.naimApiPut('/levels/room', 'volume', volume.toString())
@@ -374,7 +377,7 @@ export class NaimAudioAccessory {
             this.receiverStates.volume = volume + this.volumeIncrement;
           });
     }
-    this.service!.updateCharacteristic(this.platform.Characteristic.Volume, volume);
+    this.service!.updateCharacteristic(this.Characteristic.Volume, volume);
   };
 
   private setVolume = async (value: CharacteristicValue) => {
@@ -396,11 +399,11 @@ export class NaimAudioAccessory {
         returnedValue = returnedValue|| '';
         volume = +returnedValue;
         this.receiverStates.volume = volume;
-        this.service!.updateCharacteristic(this.platform.Characteristic.Mute, volume);
+        this.service!.updateCharacteristic(this.Characteristic.Mute, volume);
       })
       .catch((error) => {
         this.handleError(error);
-        this.service!.updateCharacteristic(this.platform.Characteristic.Mute, volume);
+        this.service!.updateCharacteristic(this.Characteristic.Mute, volume);
       });
     return volume;
   };
