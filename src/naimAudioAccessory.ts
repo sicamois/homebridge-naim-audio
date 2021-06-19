@@ -106,18 +106,18 @@ export class NaimAudioAccessory {
       this.platform.log.warn('I found an HOMEPOD !!!');
       // add a smart speaker service to handle volume and mute
       this.service =
-        this.accessory.getService(this.Service.Speaker) ||
-        this.accessory.addService(this.Service.Speaker);
+        this.accessory.getService(this.Service.SmartSpeaker) ||
+        this.accessory.addService(this.Service.SmartSpeaker);
 
       // Define Core Services = all services except Inputs
       this.coreServices.push(this.service);
 
-      // this.service!.getCharacteristic(this.Characteristic.CurrentMediaState)
-      //   .onGet(this.getCurrentMediaState.bind(this));
+      this.service!.getCharacteristic(this.Characteristic.CurrentMediaState)
+        .onGet(this.getCurrentMediaState.bind(this));
 
-      // this.service!.getCharacteristic(this.Characteristic.TargetMediaState)
-      //   .onSet(this.setTargetMediaState.bind(this))
-      //   .onGet(this.getCurrentMediaState.bind(this));
+      this.service!.getCharacteristic(this.Characteristic.TargetMediaState)
+        .onSet(this.setTargetMediaState.bind(this))
+        .onGet(this.getCurrentMediaState.bind(this));
 
       // set the service name, this is what is displayed as the default name on the Home app
       // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -131,11 +131,6 @@ export class NaimAudioAccessory {
       this.service!.getCharacteristic(this.Characteristic.Volume)
         .onSet(this.setVolume.bind(this))
         .onGet(this.getVolume.bind(this));
-
-      // register handlers for the On/Off Characteristic
-      this.service!.addCharacteristic(this.Characteristic.Active)
-        .onSet(this.setActive.bind(this))
-        .onGet(this.getActive.bind(this));
     }
   }
 

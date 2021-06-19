@@ -238,6 +238,7 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
       // create the accessory handler for the newly create accessory
       // this is imported from `platformAccessory.ts`
       new NaimAudioAccessory(this, receiverAccessory);
+      new NaimAudioAccessory(this, speakerAccessory);
 
       // link the accessory to your platform as External accessory if a TV Service is in the accessory
       // if (accessory.getService(this.Service.Television)) {
