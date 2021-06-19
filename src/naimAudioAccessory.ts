@@ -300,7 +300,6 @@ export class NaimAudioAccessory {
         }
         this.receiverStates.currentMediaState = mediaState;
         this.service!.updateCharacteristic(this.Characteristic.CurrentMediaState, mediaState);
-        this.service!.getCharacteristic(this.Characteristic.Active);
       })
       .catch((error) => {
         this.handleError(error);
