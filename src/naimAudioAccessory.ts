@@ -200,11 +200,17 @@ export class NaimAudioAccessory {
   private setActive = async (value: CharacteristicValue) => {
     const isActive = value as boolean;
     this.receiverStates.powerOn = isActive;
-    this.naimApiPut('/power', 'system', isActive ? 'on' : 'lona').catch(
-      (error) => {
-        this.handleError(error);
-        this.receiverStates.powerOn = false;
-      });
+    this.naimApiPut('/power', 'system', isActive ? 'on' : 'lona')
+      .then ( () => {
+        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier);
+      })
+      .catch(
+        (error) => {
+          this.handleError(error);
+          this.receiverStates.powerOn = false;
+          this.tvService.updateCharacteristic(this.Characteristic.Active, this.receiverStates.powerOn);
+        });
+    this.tvService.updateCharacteristic(this.Characteristic.Active, this.receiverStates.powerOn);
   };
 
   private getActive = async (): Promise<CharacteristicValue> => {
@@ -213,26 +219,28 @@ export class NaimAudioAccessory {
       .then((returnedValue) => {
         isActive = returnedValue === 'on';
         this.receiverStates.powerOn = isActive;
-        this.tvService.updateCharacteristic(this.Characteristic.Active, isActive);
-        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier);
+        this.tvService.updateCharacteristic(this.Characteristic.Active, this.receiverStates.powerOn);
       })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.powerOn = false;
-        this.tvService.updateCharacteristic(this.Characteristic.Active, false);
+        this.tvService.updateCharacteristic(this.Characteristic.Active, this.receiverStates.powerOn);
       });
     return isActive;
   };
 
   private setInputSource = async (value: CharacteristicValue) => {
+    const initialIndex = this.receiverStates.currentInput;
     const inputIndex = +value;
     this.receiverStates.currentInput = inputIndex;
     const pathToSet = this.inputs[inputIndex].path;
     this.naimApiPut(pathToSet, 'cmd', 'select', true)
       .catch(error => {
         this.handleError(error);
-        this.smartSpeakerService.getCharacteristic(this.Characteristic.ActiveIdentifier);
+        this.receiverStates.currentInput = initialIndex;
+        this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
       });
+    this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
   };
 
   private getInputSource = async (): Promise<CharacteristicValue> => {
@@ -241,6 +249,7 @@ export class NaimAudioAccessory {
       const inputPathes = this.inputs.map(input => input.path);
       const sourceIndex = inputPathes.indexOf(sourcePath);
       this.receiverStates.currentInput = sourceIndex;
+      this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
       return sourceIndex;
     }
     return 0;
@@ -248,7 +257,8 @@ export class NaimAudioAccessory {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private setTargetMediaState = async (_: CharacteristicValue) => {
-    if (this.receiverStates.currentMediaState === 0) {
+    const initialMediaState = this.receiverStates.currentMediaState;
+    if (initialMediaState === 0) {
       this.receiverStates.currentMediaState = 1;
     } else {
       this.receiverStates.currentMediaState = 0;
@@ -256,12 +266,10 @@ export class NaimAudioAccessory {
     this.naimApiPut('/nowplaying', 'cmd', 'playpause', true)
       .catch((error) => {
         this.handleError(error);
-        this.receiverStates.currentMediaState === 0 ? 1 : 0;
+        this.receiverStates.currentMediaState = initialMediaState;
+        this.smartSpeakerService.updateCharacteristic(this.Characteristic.CurrentMediaState, this.receiverStates.currentMediaState);
       });
-    this.smartSpeakerService.updateCharacteristic(
-      this.Characteristic.CurrentMediaState,
-      this.receiverStates.currentMediaState,
-    );
+    this.smartSpeakerService.updateCharacteristic(this.Characteristic.CurrentMediaState, this.receiverStates.currentMediaState);
   };
 
   private getCurrentMediaState = async (): Promise<CharacteristicValue> => {
@@ -281,18 +289,11 @@ export class NaimAudioAccessory {
             break;
         }
         this.receiverStates.currentMediaState = mediaState;
-        this.smartSpeakerService.updateCharacteristic(
-          this.Characteristic.CurrentMediaState,
-          mediaState,
-        );
+        this.smartSpeakerService.updateCharacteristic(this.Characteristic.CurrentMediaState, this.receiverStates.currentMediaState);
         this.tvService.getCharacteristic(this.Characteristic.Active);
       })
       .catch((error) => {
         this.handleError(error);
-        this.smartSpeakerService.updateCharacteristic(
-          this.Characteristic.CurrentMediaState,
-          mediaState,
-        );
       });
     // return as soon as possible, update on the resoution of the async function
     return mediaState;
@@ -303,16 +304,13 @@ export class NaimAudioAccessory {
     const isMuted = value as boolean;
     this.receiverStates.mute = isMuted;
     this.naimApiPut('/levels/room', 'mute', value as string)
-      .then( () => {
-        this.smartSpeakerService.getCharacteristic(this.Characteristic.Mute);
-      })
       .catch(
         (error) => {
           this.handleError(error);
           this.receiverStates.mute = !isMuted;
-          this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, !isMuted);
+          this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
         });
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, isMuted);
+    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
   };
 
   private getMute = async (): Promise<CharacteristicValue> => {
@@ -321,12 +319,12 @@ export class NaimAudioAccessory {
       .then((returnedValue) => {
         isMuted = returnedValue === '1';
         this.receiverStates.mute = isMuted;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, isMuted);
+        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
       })
       .catch((error) => {
         this.handleError(error);
         this.receiverStates.mute = false;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, false);
+        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
       });
     return isMuted;
   };
@@ -341,6 +339,7 @@ export class NaimAudioAccessory {
           (error) => {
             this.handleError(error);
             this.receiverStates.volume = volume - this.volumeIncrement;
+            this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
           });
     }
     if (value === this.Characteristic.VolumeSelector.DECREMENT) {
@@ -351,9 +350,10 @@ export class NaimAudioAccessory {
           (error) => {
             this.handleError(error);
             this.receiverStates.volume = volume + this.volumeIncrement;
+            this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
           });
     }
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, volume);
+    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
   };
 
   private setVolume = async (value: CharacteristicValue) => {
@@ -365,7 +365,9 @@ export class NaimAudioAccessory {
         (error) => {
           this.handleError(error);
           this.receiverStates.volume = initVolume;
+          this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
         });
+    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
   };
 
   private getVolume = async (): Promise<CharacteristicValue> => {
