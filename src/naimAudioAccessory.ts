@@ -52,7 +52,10 @@ export class NaimAudioAccessory {
     this.name = accessory.displayName;
 
     // set accessory information
-    this.infoService = this.accessory.getService(this.platform.Service.AccessoryInformation)!
+    this.infoService = this.accessory.getService(this.platform.Service.AccessoryInformation) ||
+    this.accessory.addService(this.platform.Service.AccessoryInformation);
+
+    this.infoService
       .setCharacteristic(this.platform.Characteristic.Manufacturer, receiver.manufacturer || 'Naim Audio')
       .setCharacteristic(this.platform.Characteristic.Model, receiver.modelName || 'Default-Model')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, receiver.serialNumber || 'Default-Serial');
