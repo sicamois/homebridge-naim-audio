@@ -18,8 +18,9 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint src/**.ts --max-warnings=0",
-    "watch": "npm run build && npm link && nodemon",
+    "watch": "npm run build && sudo npm link && nodemon",
     "build": "rimraf ./dist && tsc",
+    "publishDev": "npm run build && sudo npm link",
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
