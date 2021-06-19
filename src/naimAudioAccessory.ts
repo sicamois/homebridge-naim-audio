@@ -238,9 +238,9 @@ export class NaimAudioAccessory {
       .catch(error => {
         this.handleError(error);
         this.receiverStates.currentInput = initialIndex;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
+        this.tvService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
       });
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
+    this.tvService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
   };
 
   private getInputSource = async (): Promise<CharacteristicValue> => {
@@ -249,7 +249,7 @@ export class NaimAudioAccessory {
       const inputPathes = this.inputs.map(input => input.path);
       const sourceIndex = inputPathes.indexOf(sourcePath);
       this.receiverStates.currentInput = sourceIndex;
-      this.smartSpeakerService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
+      this.tvService.updateCharacteristic(this.Characteristic.ActiveIdentifier, this.receiverStates.currentInput);
       return sourceIndex;
     }
     return 0;
@@ -299,92 +299,65 @@ export class NaimAudioAccessory {
     return mediaState;
   };
 
-  private setMute = async (value: CharacteristicValue) => {
-    this.platform.log.debug('setMute with value : %s', value);
-    const isMuted = value as boolean;
-    this.receiverStates.mute = isMuted;
-    this.naimApiPut('/levels/room', 'mute', value as string)
-      .catch(
-        (error) => {
-          this.handleError(error);
-          this.receiverStates.mute = !isMuted;
-          this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
-        });
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
-  };
+  // private setMute = async (value: CharacteristicValue) => {
+  //   this.platform.log.debug('setMute with value : %s', value);
+  //   const isMuted = value as boolean;
+  //   this.receiverStates.mute = isMuted;
+  //   this.naimApiPut('/levels/room', 'mute', value as string)
+  //     .catch(
+  //       (error) => {
+  //         this.handleError(error);
+  //         this.receiverStates.mute = !isMuted;
+  //         this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
+  //       });
+  //   this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
+  // };
 
-  private getMute = async (): Promise<CharacteristicValue> => {
-    let isMuted = this.receiverStates.mute;
-    this.naimApiGet('/levels/room', 'mute')
-      .then((returnedValue) => {
-        isMuted = returnedValue === '1';
-        this.receiverStates.mute = isMuted;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
-      })
-      .catch((error) => {
-        this.handleError(error);
-        this.receiverStates.mute = false;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
-      });
-    return isMuted;
-  };
+  // private getMute = async (): Promise<CharacteristicValue> => {
+  //   let isMuted = this.receiverStates.mute;
+  //   this.naimApiGet('/levels/room', 'mute')
+  //     .then((returnedValue) => {
+  //       isMuted = returnedValue === '1';
+  //       this.receiverStates.mute = isMuted;
+  //       this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
+  //     })
+  //     .catch((error) => {
+  //       this.handleError(error);
+  //       this.receiverStates.mute = false;
+  //       this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, this.receiverStates.mute);
+  //     });
+  //   return isMuted;
+  // };
 
-  private setVolumeRelative = async (value: CharacteristicValue) => {
-    let volume = this.receiverStates.volume;
-    if (value === this.Characteristic.VolumeSelector.INCREMENT) {
-      volume = volume + this.volumeIncrement;
-      this.receiverStates.volume = volume;
-      this.naimApiPut('/levels/room', 'volume', volume.toString())
-        .catch(
-          (error) => {
-            this.handleError(error);
-            this.receiverStates.volume = volume - this.volumeIncrement;
-            this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
-          });
-    }
-    if (value === this.Characteristic.VolumeSelector.DECREMENT) {
-      volume = volume - this.volumeIncrement;
-      this.receiverStates.volume = volume;
-      this.naimApiPut('/levels/room', 'volume', volume.toString())
-        .catch(
-          (error) => {
-            this.handleError(error);
-            this.receiverStates.volume = volume + this.volumeIncrement;
-            this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
-          });
-    }
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
-  };
+  // private setVolume = async (value: CharacteristicValue) => {
+  //   const initVolume = this.receiverStates.volume;
+  //   const volume = +value;
+  //   this.receiverStates.volume = volume;
+  //   this.naimApiPut('/levels/room', 'volume', volume.toString())
+  //     .catch(
+  //       (error) => {
+  //         this.handleError(error);
+  //         this.receiverStates.volume = initVolume;
+  //         this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
+  //       });
+  //   this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
+  // };
 
-  private setVolume = async (value: CharacteristicValue) => {
-    const initVolume = this.receiverStates.volume;
-    const volume = +value;
-    this.receiverStates.volume = volume;
-    this.naimApiPut('/levels/room', 'volume', volume.toString())
-      .catch(
-        (error) => {
-          this.handleError(error);
-          this.receiverStates.volume = initVolume;
-          this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
-        });
-    this.smartSpeakerService.updateCharacteristic(this.Characteristic.Volume, this.receiverStates.volume);
-  };
-
-  private getVolume = async (): Promise<CharacteristicValue> => {
-    let volume = this.receiverStates.volume;
-    this.naimApiGet('/levels/room', 'volume')
-      .then((returnedValue) => {
-        returnedValue = returnedValue|| '';
-        volume = +returnedValue;
-        this.receiverStates.volume = volume;
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, volume);
-      })
-      .catch((error) => {
-        this.handleError(error);
-        this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, volume);
-      });
-    return volume;
-  };
+  // private getVolume = async (): Promise<CharacteristicValue> => {
+  //   let volume = this.receiverStates.volume;
+  //   this.naimApiGet('/levels/room', 'volume')
+  //     .then((returnedValue) => {
+  //       returnedValue = returnedValue|| '';
+  //       volume = +returnedValue;
+  //       this.receiverStates.volume = volume;
+  //       this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, volume);
+  //     })
+  //     .catch((error) => {
+  //       this.handleError(error);
+  //       this.smartSpeakerService.updateCharacteristic(this.Characteristic.Mute, volume);
+  //     });
+  //   return volume;
+  // };
 
 
   // Utility functions
