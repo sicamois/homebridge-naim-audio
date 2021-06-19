@@ -307,18 +307,12 @@ export class NaimAudioAccessory {
             break;
         }
         this.receiverStates.currentMediaState = mediaState;
-        this.service!.updateCharacteristic(
-          this.Characteristic.CurrentMediaState,
-          mediaState,
-        );
+        this.service!.updateCharacteristic(this.Characteristic.CurrentMediaState, mediaState);
         this.service!.getCharacteristic(this.Characteristic.Active);
       })
       .catch((error) => {
         this.handleError(error);
-        this.service!.updateCharacteristic(
-          this.Characteristic.CurrentMediaState,
-          mediaState,
-        );
+        this.service!.updateCharacteristic(this.Characteristic.CurrentMediaState, mediaState);
       });
     // return as soon as possible, update on the resoution of the async function
     return mediaState;
