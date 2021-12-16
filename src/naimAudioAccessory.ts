@@ -371,7 +371,8 @@ export class NaimAudioAccessory {
       const response = await axios.get(apiURL);
       return response.data[key];
     } catch (error) {
-      this.handleError(error, apiURL);
+      const typedError = error as Error;
+      this.handleError(typedError, apiURL);
     }
   };
 

@@ -102,7 +102,8 @@ export class NaimAudioPlatform implements DynamicPlatformPlugin {
         }
       }, durationInMs);
     } catch (error) {
-      this.log.error('An error occured during discovering : %s', error.message);
+      const typedError = error as Error;
+      this.log.error('An error occured during discovering : %s', typedError.message);
     }
   };
 
