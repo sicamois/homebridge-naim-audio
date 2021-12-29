@@ -171,14 +171,6 @@
     "@typescript-eslint/typescript-estree" "5.8.1"
     debug "^4.3.2"
 
-"@typescript-eslint/scope-manager@5.8.0":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/scope-manager/-/scope-manager-5.8.0.tgz#2371095b4fa4c7be6a80b380f4e1b49c715e16f4"
-  integrity sha512-x82CYJsLOjPCDuFFEbS6e7K1QEWj7u5Wk1alw8A+gnJiYwNnDJk0ib6PCegbaPMjrfBvFKa7SxE3EOnnIQz2Gg==
-  dependencies:
-    "@typescript-eslint/types" "5.8.0"
-    "@typescript-eslint/visitor-keys" "5.8.0"
-
 "@typescript-eslint/scope-manager@5.8.1":
   version "5.8.1"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/scope-manager/-/scope-manager-5.8.1.tgz#7fc0604f7ade8833e4d42cebaa1e2debf8b932e4"
@@ -187,28 +179,10 @@
     "@typescript-eslint/types" "5.8.1"
     "@typescript-eslint/visitor-keys" "5.8.1"
 
-"@typescript-eslint/types@5.8.0":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-5.8.0.tgz#e7fa74ec35d9dbe3560d039d3d8734986c3971e0"
-  integrity sha512-LdCYOqeqZWqCMOmwFnum6YfW9F3nKuxJiR84CdIRN5nfHJ7gyvGpXWqL/AaW0k3Po0+wm93ARAsOdzlZDPCcXg==
-
 "@typescript-eslint/types@5.8.1":
   version "5.8.1"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-5.8.1.tgz#04c6b49ebc8c99238238a6b8b43f2fc613983b5a"
   integrity sha512-L/FlWCCgnjKOLefdok90/pqInkomLnAcF9UAzNr+DSqMC3IffzumHTQTrINXhP1gVp9zlHiYYjvozVZDPleLcA==
-
-"@typescript-eslint/typescript-estree@5.8.0":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-5.8.0.tgz#900469ba9d5a37f4482b014ecce4a5dbb86cb4dd"
-  integrity sha512-srfeZ3URdEcUsSLbkOFqS7WoxOqn8JNil2NSLO9O+I2/Uyc85+UlfpEvQHIpj5dVts7KKOZnftoJD/Fdv0L7nQ==
-  dependencies:
-    "@typescript-eslint/types" "5.8.0"
-    "@typescript-eslint/visitor-keys" "5.8.0"
-    debug "^4.3.2"
-    globby "^11.0.4"
-    is-glob "^4.0.3"
-    semver "^7.3.5"
-    tsutils "^3.21.0"
 
 "@typescript-eslint/typescript-estree@5.8.1":
   version "5.8.1"
@@ -222,14 +196,6 @@
     is-glob "^4.0.3"
     semver "^7.3.5"
     tsutils "^3.21.0"
-
-"@typescript-eslint/visitor-keys@5.8.0":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/visitor-keys/-/visitor-keys-5.8.0.tgz#22d4ed96fe2451135299239feedb9fe1dcec780c"
-  integrity sha512-+HDIGOEMnqbxdAHegxvnOqESUH6RWFRR2b8qxP1W9CZnnYh4Usz6MBL+2KMAgPk/P0o9c1HqnYtwzVH6GTIqug==
-  dependencies:
-    "@typescript-eslint/types" "5.8.0"
-    eslint-visitor-keys "^3.0.0"
 
 "@typescript-eslint/visitor-keys@5.8.1":
   version "5.8.1"
@@ -1038,10 +1004,10 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-hap-nodejs@0.9.7:
-  version "0.9.7"
-  resolved "https://registry.yarnpkg.com/hap-nodejs/-/hap-nodejs-0.9.7.tgz#5ae45b7ac9b87908524da12fe743bf7664011f47"
-  integrity sha512-DrXqNK+vrdjABKxKg0XNdgrycEHEwmSg81AMX8dmp86inex+rvx4qPd9fJRktt3Ed+u8I7ePDy26T4xGxdgc0g==
+hap-nodejs@0.9.8:
+  version "0.9.8"
+  resolved "https://registry.yarnpkg.com/hap-nodejs/-/hap-nodejs-0.9.8.tgz#ea2246eca1d3337fb512f1ca5f07b446f1320b68"
+  integrity sha512-+IENi8nFh/yOvVZEEIgY+nVppoXgY3mN8CfRh/I9tlhDbp3rXlsjdvHFVOgk7qJNa6cwzKu0KzNUs+n3XpO1Iw==
   dependencies:
     "@homebridge/ciao" "~1.1.3"
     bonjour-hap "~3.6.3"
@@ -1094,14 +1060,14 @@ has@^1.0.3:
     function-bind "^1.1.1"
 
 homebridge@^1.3.8:
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/homebridge/-/homebridge-1.3.8.tgz#ba1e1cd1bc697434292b07d4b98c5da9e16603c0"
-  integrity sha512-LGX5qbLAWRfNpifaO2EN5+h78d70BctXryDN9QXXlPOQQziGMrvo9rBLQmihTNtJQut+P2JnUg+cBgcR1HYmIQ==
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/homebridge/-/homebridge-1.3.9.tgz#68c3a440a195955a5a2ec513f8cb98a15afd930b"
+  integrity sha512-/QYosrEmxao6EekPMU3la3j3qx0UWLcYQN01qbZ7s1ZrKp8aC+aShgNx1borFrY/0fHsZauGcbuNqFh+XSKNXw==
   dependencies:
     chalk "^4.1.2"
     commander "5.1.0"
     fs-extra "^10.0.0"
-    hap-nodejs "0.9.7"
+    hap-nodejs "0.9.8"
     qrcode-terminal "^0.12.0"
     semver "^7.3.5"
     source-map-support "^0.5.20"
